@@ -1,7 +1,0 @@
-*.rar
-*.zip
-/.idea/*
-*.pyc
-*.xls
-*.xlsx
-/backups_it/static/*
