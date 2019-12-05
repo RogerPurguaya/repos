@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_markup_model" model="ir.ui.view">
+      <field name="name">sale.order.form.markup</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_form"/>
+      <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="loadproductionwizard" string="Generar O.P." type="object" class="btn-primary" attrs="{'invisible':['|',('type_sale','!=','production'),('state','!=','sale')]}"/>
+                <!-- <button name="end_state_order" string="Finalizar OPs" type="object" states="sale" class="btn-primary" groups="glass_production_order.end_sale_order_group" confirm="¿Está seguro de marcar la orden con OPs Generadas?"/> -->
+            </xpath>
+            <xpath expr="//button[@name='action_view_invoice']" position="before">
+                <button type="object"
+                    name="show_po_list"
+                    class="oe_stat_button"
+                    icon="fa-truck"
+                    groups="base.group_user" attrs="{'invisible':[('op_count','=',0)]}">
+                    <field name="op_count" widget="statinfo" string="Ord. Prod."/>
+                </button>
+                 <button type="object"
+                    name="show_po_returned_list"
+                    class="oe_stat_button"
+                    icon="fa-truck"
+                    groups="base.group_user" attrs="{'invisible':[('op_returned_count','=',0)]}">
+                    <field name="op_returned_count" widget="statinfo" string="OP's Devueltas"/>
+                </button>
+            </xpath> 
+            <field name="origin" position="after">
+                <field name="op_control" readonly="1"/>
+            </field>
+            <field name="payment_term_id" position='after'>
+                <!-- <field name="type_sale" string="Tipo de Venta" required="1" attrs="{'readonly':[('state','!=','draft')]}"/> -->
+                <field name="type_sale" string="Tipo de Venta" required="1"/>
+                <field name="reference_order"/>
+            </field>
+            <xpath expr="//form/sheet/notebook" position="inside">
+                <page name="ops" string ="Órdenes de producción">
+                    <field name="op_ids">
+                        <tree>
+                            <field name="name"/>
+                            <field name="sketch" widget="pdf_viewer"/>
+                            <!-- <button name="show_pdf" string="Ver/Editar Croquis" type="object"/> -->
+                            <button name="save_pdf" string="Confirmar Croquis" confirm="Se grabará de manera permanete el croquis seleccionado ¿Desea continuar?" type="object"/>
+                            <!-- <button string="Imprimir Reporte" name="ordenprod_buttom" type="object" icon="fa-download"/> -->
+                        </tree>
+                    </field>
+                </page>
+                <page name="files" string="Archivos Croquis">
+                    <group>
+                        <field name="count_files" invisible="1"/>
+                        <button string="Agregar PDF" name="add_sketch_file" type="object" class="btn-primary" attrs="{'invisible': [('before_invoice','=',False),('count_files','>',0)]}"/>
+                    </group>
+                    <field name="files_ids">
+                        <tree editable ="button" create="false" edit="false">
+                            <field name="pdf_name" readonly="1" required="0" string="Archivo origen"/>
+                            <!-- <field name="path_pdf" readonly="1"/> -->
+                            <field name="op_id" readonly="1" invisible="0"/>
+                            <button name="show_sketch" string="Ver Croquis" type="object"/>
+                        </tree>
+                    </field>
+                </page>
+            </xpath>
+            
+            <xpath expr="//group/field[@name='confirmation_date']" position="replace">
+            </xpath>
+            
+            <xpath expr="//group[@name='sale_pay']" position="after">
+                <group name="other fields" string="Información extra">
+                    <field name="confirmation_date"/>
+                </group>
+            </xpath>
+
+             <field name="product_id" position="attributes">
+                 <attribute name="domain">[('retazo','=',False)]</attribute>
+             </field>
+
+      </field>
+    </record>
+
+    <record id="view_order_tree_markup_model" model="ir.ui.view">
+      <field name="name">sale.order.tree.markup</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.view_order_tree"/>
+      <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="op_control"/>
+            </field>
+            <field name="name" position="after">
+                <field name="reference_order" string="Referencia OP"/>
+            </field>
+      </field>
+    </record>
+
+    <record id="view_order_search_markup_model" model="ir.ui.view">
+      <field name="name">sale.order.search.markup</field>
+      <field name="model">sale.order</field>
+      <field name="inherit_id" ref="sale.sale_order_view_search_inherit_sale"/>
+      <field name="arch" type="xml">
+            <xpath expr="//group" position="inside">
+                <filter string="Control OP" domain="[]" context="{'group_by':'op_control'}"/>
+            </xpath>
+      </field>
+    </record>
+</odoo>

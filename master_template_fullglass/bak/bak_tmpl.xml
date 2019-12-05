@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+    <template id="assets_backend" inherit_id="web.assets_backend">
+      <xpath expr="." position="inside">
+        <link rel="stylesheet" href="/master_template_fullglass/static/src/css/sheet.css"/>
+      </xpath>
+    </template>
+
+       <!-- mtf.template form view -->
+       <record id="master_template_view_form" model="ir.ui.view">
+           <field name="name">mtf.template.view.form</field>
+           <field name="model">mtf.template</field>
+           <field name="arch" type="xml">
+               <form string="Ficha Maestra">
+                <header>
+                    <button string="Kardex" name="view_kardex" type="object" class="btn-primary"/>
+                    <button string="Calcular" name="compute_template" type="object" class="btn-primary"/>
+                    <button string="Reporte" name="build_report" type="object" class="btn-primary" icon="fa-print"/>
+                    <button string="Excel" name="view_excel" type="object" class="btn-primary" icon="fa-table"/>
+                </header>
+                   <sheet>
+                    <div class="oe_button_box margin_bott" name="button_box">
+                        <button name="toggle_active" type="object" class="oe_stat_button" icon="fa-archive">
+                            <field name="active" widget="boolean_button" options="{'terminology': 'archive'}"/>
+                        </button>
+                    </div>
+                    <div class="main_table_container table-responsive">
+                        <table class="o_list_view table table-condensed table-striped">
+                            <thead>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th>Medida</th>
+                                <th>Unidad</th>
+                                <th>Peso</th>
+                                <th>Cantidad</th>
+                                <th>Stock</th>
+                                <th>Código Internacional</th>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                <td><field name="code" readonly="1"/></td>
+                                <td><field name="product_id"/></td>
+                                <td><field name="measure" class="cont_right"/></td>
+                                <td><field name="uom_id"/></td>
+                                <td><field name="weight" class="cont_right"/></td>
+                                <td><field name="quantity" class="cont_right"/></td>
+                                <td><field name="stock" class="cont_right"/></td>
+                                <td><field name="int_code"/></td>
+                                </tr>
+                            </tbody>                        
+                        </table>
+                    </div>
+                    <div class="row table_container container">
+                        <div>
+                            <div class="col-lg-2"></div>
+                            <div class="col-lg-2">Base</div>
+                            <div class="col-lg-2">Altura</div>
+                            <div class="col-lg-2">Móvil</div>
+                            <div class="col-lg-2">SobreLuz</div>
+                            <div class="col-lg-2">Alfeizar</div>
+                        </div>
+
+                        <div>
+                            <div class="col-lg-2">Mínimos</div>
+                            <div class="col-lg-2"><field name="min_base" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="min_height" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="min_movil" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="min_sobre" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="min_alfe" class="cont_right"/></div>
+                        </div>
+                         <div>
+                            <div class="col-lg-2">Standard</div>
+                            <div class="col-lg-2"><field name="std_base" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="std_height" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="std_movil" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="std_sobre" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="std_alfe" class="cont_right"/></div>
+                        </div>
+                         <div>
+                            <div class="col-lg-2">Máximos</div>
+                            <div class="col-lg-2"><field name="max_base" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="max_height" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="max_movil" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="max_sobre" class="cont_right"/></div>
+                            <div class="col-lg-2"><field name="max_alfe" class="cont_right"/></div>
+                        </div>
+                    </div>
+                    <div class="table_container">
+                         <div class="row">
+                            <div class="col-lg-4">B1<field name="custom_base1" class="cont_right"/></div>
+                            <div class="col-lg-4">B2<field name="custom_base2" class="cont_right"/></div>
+                            <div class="col-lg-4">Medida en:<field name="custom_long_uom" class="cont_right"/></div>
+                        </div>
+                        <div class="row">
+                            <div class="col-lg-4">H1:<field name="custom_base1" class="cont_right"/></div>
+                            <div class="col-lg-4">H2:<field name="custom_base2" class="cont_right"/></div>
+                            <div class="col-lg-4"></div>
+                        </div>
+                        <!-- <div>
+                            <div class="col-lg-4"><field name="custom_base2" class="cont_right"/></div>
+                            <div class="col-lg-4"><field name="custom_long_uom" class="cont_right"/></div>
+                        </div> -->
+                    </div>
+                       <group>
+                        <field name="line_ids" nolabel="1">
+                            <tree editable="bottom">
+                              <field name="default_code"/>
+                              <field name="model"/>
+                              <field name="product_id"/>
+                              <field name="uom_id"/>
+                              <field name="unit_price"/>
+                              <field name="uom_quantity"/>
+                              <field name="fixed"/>
+                              <field name="base"/>
+                              <field name="height"/>
+                              <field name="depending_on"/>
+                              <field name="location"/>
+                              <field name="position"/>
+                              <field name="cut_type"/>
+                              <field name="total_units"/>
+                              <field name="amount_untaxed"/>
+                            </tree>
+                        </field>
+                       </group>
+                       <group col="4">
+                            <group>
+                                <field name="amount_total" class="cont_right"/>
+                                <field name="area_total" class="cont_right"/>
+                            </group>
+                             <group>
+                                <field name="energy_m2" class="cont_right"/>
+                                <field name="waste_percent" class="cont_right"/>
+                                <field name="manpower_m2" class="cont_right"/>
+                            </group>
+                            <group>
+                                <field name="energy_cost" class="cont_right"/>
+                                <field name="waste" class="cont_right"/>
+                                <field name="manpower" class="cont_right"/>
+                                <field name="total_costs" class="cont_right"/>
+                            </group>
+                            <group>
+                                <label for="util_percent"/>
+                                <div class="o_row">
+                                    <field name="util_percent" class="cont_right"/>
+                                    <field name="util_amount" readonly="1" class="cont_right"/>
+                                </div>
+                                <field name="util_sale" class="cont_right"/>
+                                <field name="taxes" class="cont_right"/>
+                                <field name="sale_price" class="cont_right"/>
+                            </group>
+                       </group>
+                   </sheet>
+                   <footer>
+                    <button string="Guardar" name="save_template" type="object" class="btn-primary" icon="fa-save"/>
+                    <button string="Cancelar" name="cancel" special="cancel" class="oe_link oe_inline"/>
+                   </footer>
+               </form>
+           </field>
+       </record>
+
+
+    <!-- mtf.template tree view -->
+    <record id="master_template_view_tree" model="ir.ui.view">
+        <field name="name">mtf.template.view.tree</field>
+        <field name="model">mtf.template</field>
+        <field name="arch" type="xml">
+            <tree>
+                <field name="product_id"/> 
+                <field name="code"/> 
+                <field name="active"/> 
+            </tree>
+        </field>
+    </record>
+
+
+        <record id="master_template_list_action" model="ir.actions.act_window">
+            <field name="name">Plantillas maestras</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">mtf.template</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <menuitem name="Plantilas maestras" id="master_template_main_menu"
+        parent="sales_team.menu_sale_config"
+        sequence="4" 
+        groups="master_template_fullglass.group_master_tmpl_manager" />
+
+        <menuitem name="Plantilas maestras" id="master_template_list_menu"
+        parent="master_template_main_menu"
+        action="master_template_list_action" sequence="1" 
+        groups="master_template_fullglass.group_master_tmpl_manager" />
+
+        <menuitem name="Crear Plantilla" id="master_template_create_menu"
+        parent="master_template_main_menu"
+        action="master_template_list_action" sequence="2" 
+        groups="master_template_fullglass.group_master_tmpl_manager" />
+
+    </data>
+</odoo>

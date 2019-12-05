@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_manager +all,mtf_template,model_mtf_template,group_master_tmpl_manager,1,1,1,1
+access_manager2 +all,mtf_template_line,model_mtf_template_line,group_master_tmpl_manager,1,1,1,1
+access_user +r,mtf_template,model_mtf_template,group_master_tmpl_manager,1,1,1,1
+access_user2 +r,mtf_template_line,model_mtf_template_line,group_master_tmpl_manager,1,1,1,1
+access_public +all,mtf_sale_calculate,model_mtf_sale_calculate,,1,1,1,1
+access_public2 +all,mtf_sale_calculate_line,model_mtf_sale_calculate_line,,1,1,1,1

@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+        <!-- mtf.parameter.config form view -->
+        <record id="mtf_parameter_config_view_form" model="ir.ui.view">
+            <field name="name">mtf.parameter.config.view.form</field>
+            <field name="model">mtf.parameter.config</field>
+            <field name="arch" type="xml">
+                <form string="Parámetros de configuración">
+                    <sheet>
+                        <group>
+                            <group>
+                                <field name="mat_prima_location_id" required="1"/> 
+                            </group>
+                            <group>
+                                <field name="category_insulados_id" string="Categoría de Insulados" required="1"/>
+                            </group>
+                        </group>
+                        <group>
+                            <div class="o_group o_inner_group o_group_col_8 table_container">
+                            <div>
+                                <div class="col-lg-4">CLIENTE</div>
+                                <div class="col-lg-4">CATEGORÍA</div>
+                                <div class="col-lg-4">% DE DESCUENTO</div>
+                            </div>
+                            <div>
+                                <div class="col-lg-4">Distribuidor/Instalador</div>
+                                <div class="col-lg-4">A</div>
+                                <div class="col-lg-4"><field name="discount_categ_a" class="cont_right"/></div>
+                            </div>
+                             <div>
+                                <div class="col-lg-4">Instalador</div>
+                                <div class="col-lg-4">B</div>
+                                <div class="col-lg-4"><field name="discount_categ_b" class="cont_right"/></div>
+                            </div>
+                             <div>
+                                <div class="col-lg-4">Vidriero/Arquitecto</div>
+                                <div class="col-lg-4">C</div>
+                                <div class="col-lg-4"><field name="discount_categ_c" class="cont_right"/></div>
+                            </div>
+                             <div>
+                                <div class="col-lg-4">Clinte final</div>
+                                <div class="col-lg-4">D</div>
+                                <div class="col-lg-4"><field name="discount_categ_d" class="cont_right"/></div>
+                            </div>
+                        </div>
+                        </group>
+                            <div class="o_group o_inner_group o_group_col_12 table_container">
+                            <div>
+                                <div class="col-lg-2">CONCEPTO GASTO</div>
+                                <div class="col-lg-2">CRISTAL TEMPLADO</div>
+                                <div class="col-lg-2">CRISTAL INSULADO</div>
+                                <div class="col-lg-2">CRISTAL LAMINADO</div>
+                                <div class="col-lg-2">CARPINTERÍA METÁLICA</div>
+                                <div class="col-lg-2">PEGADO SILICONA</div>
+                                <!-- <div class="col-lg-2">ARMADO PANELES</div> -->
+                            </div>
+                            <div>
+                                <div class="col-lg-2">Mano de obra</div>
+                                <div class="col-lg-2"><field name="manpower_cr_tmp" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="manpower_cr_ins" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="manpower_cr_lam" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="manpower_carp_met" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="manpower_peg_sil" class="cont_right"/></div>
+                                <!-- <div class="col-lg-2"><field name="manpower_arm_pan" class="cont_right"/></div> -->
+                            </div>
+                            <div>
+                                <div class="col-lg-2">Servicios de terceros</div>
+                                <div class="col-lg-2"><field name="services_cr_tmp" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="services_cr_ins" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="services_cr_lam" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="services_carp_met" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="services_peg_sil" class="cont_right"/></div>
+                                <!-- <div class="col-lg-2"><field name="services_arm_pan" class="cont_right"/></div> -->
+                            </div>
+                            <div>
+                                <div class="col-lg-2">Depreciación</div>
+                                <div class="col-lg-2"><field name="depreciacion_cr_tmp" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="depreciacion_cr_ins" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="depreciacion_cr_lam" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="depreciacion_carp_met" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="depreciacion_peg_sil" class="cont_right"/></div>
+                                <!-- <div class="col-lg-2"><field name="depreciacion_arm_pan" class="cont_right"/></div> -->
+                            </div>
+                            <div>
+                                <div class="col-lg-2">Seguros</div>
+                                <div class="col-lg-2"><field name="cost_safe_cr_tmp" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="cost_safe_cr_ins" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="cost_safe_cr_lam" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="cost_safe_carp_met" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="cost_safe_peg_sil" class="cont_right"/></div>
+                                <!-- <div class="col-lg-2"><field name="cost_safe_arm_pan" class="cont_right"/></div> -->
+                            </div>
+                            <div>
+                                <div class="col-lg-2">Tributos</div>
+                                <div class="col-lg-2"><field name="tributes_cr_tmp" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="tributes_cr_ins" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="tributes_cr_lam" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="tributes_carp_met" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="tributes_peg_sil" class="cont_right"/></div>
+                                <!-- <div class="col-lg-2"><field name="tributes_arm_pan" class="cont_right"/></div> -->
+                            </div>
+                            <div>
+                                <div class="col-lg-2">Gastos Adm y Ventas</div>
+                                <div class="col-lg-2"><field name="cost_adm_sales_cr_tmp" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="cost_adm_sales_cr_ins" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="cost_adm_sales_cr_lam" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="cost_adm_sales_carp_met" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="cost_adm_sales_peg_sil" class="cont_right"/></div>
+                                <!-- <div class="col-lg-2"><field name="cost_adm_sales_arm_pan" class="cont_right"/></div> -->
+                            </div>
+                            <div>
+                                <div class="col-lg-2">Margen sobre la venta(%)</div>
+                                <div class="col-lg-2"><field name="util_percent_cr_tmp" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="util_percent_cr_ins" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="util_percent_cr_lam" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="util_percent_carp_met" class="cont_right"/></div>
+                                <div class="col-lg-2"><field name="util_percent_peg_sil" class="cont_right"/></div>
+                                <!-- <div class="col-lg-2"><field name="util_percent_arm_pan" class="cont_right"/></div> -->
+                            </div>
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- mtf.parameter.config tree view -->
+        <record id="mtf_parameter_config_view_tree" model="ir.ui.view">
+            <field name="name">mtf.parameter.config.view.tree</field>
+            <field name="model">mtf.parameter.config</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="name"/>
+                </tree>
+            </field>
+        </record>
+
+        <!-- mtf.parameter.config action window -->
+        <record id="mtf_parameter_config_action" model="ir.actions.act_window">
+            <field name="name">Parámetros</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">mtf.parameter.config</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_type">form</field>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Crear parámetros de configuración.
+                </p><p>
+                Sólo se permite un registro para sus parámetros de configuración.
+                </p>
+            </field>
+        </record>
+
+
+        <!-- This Menu Item must have a parent and an action -->
+        <menuitem id="mtf_parameter_config_menu_act" 
+        name="Parámetros" 
+        parent="master_template_fullglass.master_template_main_menu" 
+        action="mtf_parameter_config_action" 
+        sequence="4"
+        groups="master_template_fullglass.group_master_tmpl_manager"/>
+
+    </data>
+</odoo>

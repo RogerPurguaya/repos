@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!-- Motivos de transferecia según SUNAT -->
+    <data noupdate="1"> 
+        <record id="1" model="mtf.parameter.config">
+            <field name="name">Parámetros de Fichas maestras</field>
+        </record>
+    </data>
+</odoo>

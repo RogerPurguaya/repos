@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    
+    <template id="assets_backend" name="custom_css" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+             <link rel="stylesheet" href="/sale_calculadora_it/static/src/css/modalg.css"/>
+        </xpath>
+    </template>
+    
+    <template id="report_invoice_document_inherit_sale_calc" inherit_id="sale.report_invoice_document_inherit_sale">
+        <xpath expr="//div[@groups='sale.group_delivery_invoice_address']" position="replace">
+            <div class="col-xs-5 col-xs-offset-7" groups="sale.group_delivery_invoice_address">
+                <strong t-if="o.partner_shipping_id == o.partner_id">Dirección de facturación y de envío:</strong>
+                <strong t-if="o.partner_shipping_id != o.partner_id">Dirección de facturación:</strong>
+                <div t-field="o.partner_id.name"/>
+                <div >
+                    <span>
+                        <span t-field="o.partner_shipping_id.type_document_partner_it.name"/> <span t-field="o.partner_shipping_id.nro_documento"/> 
+                    </span>
+                </div>
+                <div t-field="o.partner_id"
+                    t-options='{"widget": "contact", "fields": ["address"], "no_marker": True}'/>
+
+                <div t-if="o.partner_shipping_id != o.partner_id" class="mt8">
+                    <strong>Dirección de envío:</strong>
+                    <div t-field="o.partner_shipping_id"
+                        t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                    <span><span t-field="o.partner_shipping_id.type_document_partner_it.name"/> <span t-field="o.partner_shipping_id.nro_documento"/> </span>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

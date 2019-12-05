@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data>
+        <record model="ir.ui.view" id="glass_remove_order_form_view">
+            <field name="name">glass.remove.order.form.view</field>
+            <field name="model">glass.remove.order</field>
+            <field name="arch" type="xml">
+                <form string="Devolver Orden de Producción">
+                    <group>
+                        <group>
+                            <field name="order_name" readonly="1" style="width:50%%"/>
+                        </group>
+                        <group>
+                            <field name="date_remove" style="width:50%%"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="motive_remove" style="width:50%%"/>
+                    </group>
+                    <footer>
+                        <button string="Devolver Orden de Prod." name="remove_order" type="object" class="btn-danger" confirm="Esta Operación no podrá ser revertida, ¿Está seguro de continuar?"/>
+                        <button string="Cancelar" name="cancel" special="cancel" class="oe_link oe_inline"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

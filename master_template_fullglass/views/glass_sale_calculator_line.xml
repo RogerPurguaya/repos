@@ -1,0 +1,56 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+        <!-- glass.sale.calculator.line form view -->
+        <!-- Formaulario para cálculo de cristales insulados -->
+        <record id="calculator_line_template_details_form" model="ir.ui.view">
+            <field name="name">calculator.line.insulado.compute.form</field>
+            <field name="model">glass.sale.calculator.line</field>
+            <field name="arch" type="xml">
+                <form string="Cálculo en base a Ficha Maestra">
+                    <header>
+                        <button string="Calcular" name="compute_saleprice_from_template" type="object" class="btn-primary" icon="fa-bolt"/>
+                    </header>
+                    <sheet>
+                        <field name="insulado" invisible="1"/>
+                        <group string="Cristales base para Insulado" attrs="{'invisible':[('insulado','!=',True)]}">
+                            <field name="child_ids" readonly="1" nolabel="1" context="{'form_view_ref':'sale_calculadora_it.calculator_line_view_form'}">
+                                <tree editable="bottom">
+                                    <field name="default_code_ins" string="Código"/>
+                                    <field name="product_ins_id" string="Producto"/>
+                                    <field name="quantity"/>
+                                    <field name="crystal_num"/>
+                                    <field name="base1"/> 
+                                    <field name="base2"/> 
+                                    <field name="height1"/> 
+                                    <field name="height2"/> 
+                                    <field name="descuadre"/> 
+                                    <field name="page_number"/>
+                                    <field name="glass_order_id"/>
+                                </tree>
+                            </field>
+                        </group>
+                        <group string="Materiales de Ficha">
+                            <field name="material_line_ids" nolabel="1">
+                                <tree create="false" delete="false" editable="bottom">
+                                    <field name="not_cost" string="Material Propio"/>
+                                    <field name="default_code" string="Código" readonly="1"/>
+                                    <field name="product_id" string="Descripción de Producto" readonly="1"/>
+                                    <field name="model" string="Modelo" readonly="1"/>
+                                    <field name="uom_id" string="Unidad" readonly="1"/>
+                                    <field name="required_quantity" string="Cantidad" readonly="1"/>
+                                </tree>
+                            </field>
+                        </group>
+                        <group>
+                            <field name="mtf_sale_price" readonly="1"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button string="Guardar y regresar" name="back_view" type="object" class="btn-primary" context="{'module_name':'master_template_fullglass'}"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,30 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+  <data>
+        <record model="ir.ui.view" id="build_glass_order_wizard_form_view">
+            <field name="name">build.glass.order.wizard.form</field>
+            <field name="model">build.glass.order.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Crear Orden de Producción">
+                    <group>
+                        <group>
+                            <field name="selected_file_id" required="1" options="{'no_create':True}"/>
+                            <field name="file_name" invisible="1"/>
+                            <field name="comercial_area" required="1"/>
+                            <field name="destinity_order"/>
+                        </group>
+                        <group>
+                            <field name="send2partner"/>
+                            <field name="in_obra"/>
+                            <field name="obra_text"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button string="Crear Órden de Producción" class="btn-primary" name="create_production_order" type="object" icon="fa-rocket"/>
+                        <button string="Cancelar" name="cancel" special="cancel" class="oe_link oe_inline"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+  </data>
+</odoo>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_glass_in_production_wizard_form" model="ir.ui.view">
+        <field name="name">glass.in.production.wizard.form.view</field>
+        <field name="model">glass.in.production.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Ingreso a APT">                 
+                <group>
+                    <group>
+                        <field name="stock_type_id"/>
+                        <field name="date_in"/>
+                        <field name="search_param" required="1"/>
+                        <field name="order_id"  attrs="{'invisible':[('search_param','!=','glass_order')]}" domain="[('state','=','process'),('state','!=','returned')]"/>
+                        <field name="search_code" attrs="{'invisible':[('search_param','!=','search_code')]}"/>
+                    </group>
+                    <group>
+                            <field name="message_erro" style="color:Red;" string=" " readonly="1"/>
+                            <field name="location_id"/>
+                            <field name="start_date" string="Fecha Inicial"/>
+                            <field name="end_date" string="Fecha Fin"/>
+                    </group>
+                    <group>
+                    <button name="refresh_selected_lines" type="object" string="Refrescar Lineas" class="btn-warning"/>
+                    <button name="get_all_available" type="object" string="Obtener Todos" class="btn-success"/>
+                    </group>
+                </group>
+                <notebook>
+                    <page string="Ordenes de Producción" name ="ops">
+                        <field name="order_ids" readonly="0">
+                            <tree  editable="botton">
+                                <field name="selected"/>
+                                <field name="order_id" readonly="1"/>
+                                <field name="partner_id" readonly="1"/>
+                                <field name="date_production" readonly="1"/>
+                                <field name="total_pzs" readonly="1"/>
+                                <field name="total_area" readonly="1"/>
+                            </tree>
+                        </field>
+                        <field name="line_ids" widget="many2many" options="{'reload_on_button': true}">
+                            <tree editable='bottom' create="false">
+                                <field name="order_id" string="OP" readonly="1"/>
+                                <field name="partner_id" readonly="1"/>
+                                <field name="product_id" readonly="1"/>
+                                <field name="crystal_number" readonly="1"/>
+                                <field name="base1" string="Base1" readonly="1"/>
+                                <field name="base2" string="Base2" readonly="1"/>
+                                <field name="altura1" string="Altura1" readonly="1"/>
+                                <field name="altura2" string="Altura2" readonly="1"/>
+                                <field name="location_tmp" readonly="1"/>
+                            </tree>
+                        </field>
+                    </page>
+                </notebook>
+                <footer>
+                    <button string ="Generar Ingreso" name="makeingreso" type="object" class="btn-primary"/>
+                    <button string ="Cancelar" name="cancel" special="cancel" class="oe_link oe_inline"/>
+                </footer>
+            </form>
+        </field>
+    
+    </record>
+        <record id="glass_in_production_wizard_action" model="ir.actions.server">
+            <field name="name">Ingreso a APT</field>
+            <field name="model_id" ref="model_glass_in_production_wizard"/>
+            <field name="code">              
+                    action = model.get_new_element()
+            </field>
+        </record>
+
+
+     <menuitem id="glass_in_production_wizard_menu" parent="glass_inventory_menu" action="glass_in_production_wizard_action" sequence="9" groups="glass_production_order.group_glass_user"/>
+
+</odoo>

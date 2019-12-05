@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+        <record id="show_detail_lines_entered_stock_wizard" model="ir.ui.view">
+            <field name="name">show.detail.lines.entered.stock.wizard.form</field>
+            <field name="model">detail.crystals.entered.wizard</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+            <form>
+            <field name="warning_message" style="color:Red;font-weight:bold;" string=" " readonly="1"/>
+             <field name="detail_lines" string="Lineas de Orden">
+                <tree string="Lineas de Orden" create="false" delete="false" editable="bottom" decoration-danger="is_break == True">
+                    <field name="order_id"  readonly="1" string="OP"/>
+                    <field name="req_id" readonly="1" string="Requisición"/>
+                    <field name="base1"  readonly="1" />
+                    <field name="base2"  readonly="1" />
+                    <field name="height1"  readonly="1" />
+                    <field name="height2"  readonly="1" />
+                    <field name="crystal_num"  readonly="1" />
+                    <field name="area"  readonly="1" sum='Area Total'/>
+                    <field name="templado"  readonly="1" />
+                    <field name="ingresado"  readonly="1" />
+                    <field name="entregado"  readonly="1" />
+                    <field name="packing_list" readonly="1"/>
+                    <field name="is_break" readonly="1" string="Roto"/>
+                </tree>
+             </field>
+                <footer>
+                    <button string ="Cerrar" name="cancel" special="cancel" class="oe_link oe_inline"/>
+                </footer>
+            </form>
+            </field>
+        </record>  
+
+
+        <!-- formulario para devoluciones de cristales desde APT -->
+        <record id="show_detail_return_lines_wizard_form" model="ir.ui.view">
+            <field name="name">show.detail.return.lines.wizard.form</field>
+            <field name="model">detail.crystals.entered.wizard</field>
+            <field name="type">form</field>
+            <field name="arch" type="xml">
+            <form>
+            <field name="warning_message" style="color:Red;font-weight:bold;" string=" " readonly="1"/>
+             <field name="detail_lines" string="Detalle de cristales">
+                <tree string="Cristales a Romper y Devolver" create="false" delete="false" editable="bottom" decoration-danger="is_break == True" decoration-warning="check == True">
+                    <field name="check"/>
+                    <field name="motive" string="Motivo"/>
+                    <field name="order_id"  readonly="1" string="OP"/>
+                    <field name="base1"  readonly="1" />
+                    <field name="base2"  readonly="1" />
+                    <field name="height1"  readonly="1" />
+                    <field name="height2"  readonly="1" />
+                    <field name="crystal_num"  readonly="1" />
+                    <field name="area"  readonly="1" sum='Area Total'/>
+                    <field name="templado"  readonly="1" />
+                    <field name="ingresado"  readonly="1" />
+                    <field name="entregado"  readonly="1" />
+                    <field name="packing_list" readonly="1"/>
+                    <field name="is_break" readonly="1" string="Roto"/>
+                </tree>
+             </field>
+                <footer>
+                    <button name="select_crystals_to_return" type="object" string="Romper y devolver" class='btn-danger' confirm="¿Está seguro de romper y devolver los cristales seleccionados?"/>
+                    <button string ="Cancelar" name="cancel" special="cancel" class="oe_link oe_inline"/>
+                </footer>
+            </form>
+            </field>
+        </record> 
+
+<!-- detail.crystals.entered.wizard action window -->
+<!-- <record id="detail_crystals_entered_wizard_action" model="ir.actions.act_window">
+    <field name="name">Ver cristales a Devolver</field>
+    <field name="type">ir.actions.act_window</field>
+    <field name="res_model">detail.crystals.entered.wizard</field>
+    <field name="view_mode">tree,form</field>
+    <field name="view_type">form</field>
+</record> -->
+
+</odoo>
