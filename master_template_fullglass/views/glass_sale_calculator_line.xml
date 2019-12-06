@@ -36,6 +36,7 @@
                                     <field name="not_cost" string="Material Propio"/>
                                     <field name="default_code" string="Código" readonly="1"/>
                                     <field name="product_id" string="Descripción de Producto" readonly="1"/>
+                                    <field name="to_produce" string="A producir" readonly="1"/>
                                     <field name="model" string="Modelo" readonly="1"/>
                                     <field name="uom_id" string="Unidad" readonly="1"/>
                                     <field name="required_quantity" string="Cantidad" readonly="1"/>

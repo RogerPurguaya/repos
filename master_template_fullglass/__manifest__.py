@@ -24,7 +24,7 @@
 		'security/groups.xml',
 		'security/ir.model.access.csv',
 		'data/data.xml',
-		#'views/sale_order.xml',
+		'views/sale_order.xml',
 		'views/mtf_template.xml',
 		'views/glass_sale_calculator.xml',
 		'views/glass_sale_calculator_line.xml',

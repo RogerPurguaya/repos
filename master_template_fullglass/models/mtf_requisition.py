@@ -10,10 +10,14 @@ class MtfRequisition(models.Model):
 
 	name = fields.Char('Nombre')
 	user_id = fields.Many2one('res.users',string='Responsable')
+	order_id = fields.Many2one('glass.order',string=u'Orden de Producción')
 	line_ids = fields.One2many('mtf.requisition.line','requisition_id')
-	state = fields.Selection([('draft','Borrador'),('confirmed','Confirmada'),('ended','Finalizada')],default='draft',string='Estado')
+	state = fields.Selection([('draft','Borrador'),('confirmed','Confirmada'),('ended','Finalizada'),('cancel','Cancelada')],default='draft',string='Estado')
 
+	picking_id = fields.Many2one('stock.picking',string='Albarán')
 	
+
+
 	#picking_ids = fields.Many2many('stock.picking',string='Pickings',compute='_get_picking_ids',copy=False)
 	#picking_count = fields.Integer(u'Nro pickings',compute="_get_picking_ids",copy=False)
 	# @api.one

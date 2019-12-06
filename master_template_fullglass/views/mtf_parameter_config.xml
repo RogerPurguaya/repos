@@ -11,10 +11,14 @@
                         <group>
                             <group>
                                 <field name="mat_prima_location_id" required="1"/>
-                                <field name="requisition_seq_id" required="1"/> 
                             </group>
                             <group>
                                 <field name="category_insulados_id" string="Categoría de Insulados" required="1"/>
+                            </group>
+                            <group string="Requisición de Materiales">
+                                <field name="requisition_seq_id" required="1"/> 
+                                <field name="req_default_pick_type_id" required="1"/> 
+                                <field name="req_default_traslate_motive_id" required="1"/> 
                             </group>
                         </group>
                         <group>

@@ -12,6 +12,8 @@ class MtfParameterConfig(models.Model):
 	category_insulados_id = fields.Many2one('product.category',string='Categ. Insulados') # cristales insulados
 
 	requisition_seq_id = fields.Many2one('ir.sequence',string='Secuencia para requisiciones')
+	req_default_pick_type_id = fields.Many2one('stock.picking.type',string=u'Operación de Requisición por defecto')
+	req_default_traslate_motive_id = fields.Many2one('einvoice.catalog.12',string=u'Motivo de traslado por defecto')
 	#gastos_insumos_location_id = fields.Many2one('stock.location',string='Ubicación de Gastos Insumos',help=u'Ubicación que determinará si una línea de ficha maestra será un Gasto/Insumo')
 
 	discount_categ_a = fields.Float(u'Descuento categoría A',default=0.0)

@@ -87,12 +87,13 @@
                                     <field name="default_code" string="Código" readonly="1"/>
                                     <field name="model"/>
                                     <field name="uom_id" readonly="1"/>
-                                    <field name="unit_price"/>
+                                    <field name="unit_price" required="1"/>
+                                    <field name="un_price_special" required="1"/>
                                     <field name="pos_ins_crystal"/>
                                     <field name="to_produce"/>
                                     <field name="is_spacer"/>
                                     <field name="not_costed"/>
-                                    <field name="uom_quantity"/>
+                                    <field name="uom_quantity" required="1"/>
                                     <field name="fixed"/>
                                     <field name="base" string="Base(mm)"/>
                                     <field name="inc_b"/>

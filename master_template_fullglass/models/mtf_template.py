@@ -154,8 +154,9 @@ class MasterTemplate(models.Model):
 			else:
 				insumos.append(val['amount_untaxed'])
 
-		area = filter(lambda i: i['base'] and i['height'] and not i['fixed'],values)
-		area_total = sum(map(lambda x: float(x['base']*x['height'])/1000000.0,area))
+		#area = filter(lambda i: i['base'] and i['height'] and not i['fixed'],values)
+		#area_total = sum(map(lambda x: float(x['base']*x['height'])/1000000.0,area))
+		area_total = float(base_in*height_in)/1000000.0 # ? FIX?
 		
 		cost_mp = sum(mp)
 		cost_insumos = sum(insumos)
@@ -167,13 +168,13 @@ class MasterTemplate(models.Model):
 		cost_safe    = (getattr(self.config_id,'cost_safe_'+app_on)) * area_total
 		tributes     = (getattr(self.config_id,'tributes_'+app_on)) * area_total
 		cost_adm_sales = (getattr(self.config_id,'cost_adm_sales_'+app_on)) * area_total
-		util_percent = (getattr(self.config_id,'util_percent_'+app_on)) * area_total
+		util_percent = (getattr(self.config_id,'util_percent_'+app_on))
 
 		total_indirect_costs = manpower + services + depreciacion + cost_safe + tributes
 		total_cost_manufacturing = total_indirect_costs + amount_total
 		total_cost = total_cost_manufacturing + cost_adm_sales
-		sale_price = total_cost/(1-(util_percent/100)) # pendiente de validación
-		#sale_price = total_cost*(1+(util_percent/100)) # al parecer es esto xD
+		#sale_price = total_cost/(1-(util_percent/100)) # pendiente de validación
+		sale_price = total_cost*(1+(util_percent/100)) # al parecer es esto xD
 
 		if ctx.get('only_sale_price'):
 			return sale_price
@@ -319,8 +320,8 @@ class MasterTemplateLine(models.Model):
 			total_units = separator * self.inc_b * float(base*2+height*2)/1000.0 * self.uom_quantity
 		
 		# tmp merma le agrego al total de unidades la cantidad de merma o desperdicio:
-		#total_units = total_units*(1+(self.waste_percent/100))
-		total_units = total_units/(1-(self.waste_percent/100)) # revisar esta vaina
+		total_units = total_units*(1+(self.waste_percent/100))
+		#total_units = total_units/(1-(self.waste_percent/100)) # revisar esta vaina
 		mp_loc = self.template_id.config_id.mat_prima_location_id
 		# por ahora todo lo q no esta en materia primas va a gastos e insumos
 		#ig_loc = config.gastos_insumos_location_id 

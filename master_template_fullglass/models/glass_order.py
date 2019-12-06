@@ -7,9 +7,9 @@ class GlassOrder(models.Model):
 	_inherit = 'glass.order'
 
 	#mtf_req_line_ids = fields.One2many('mtf.requisition.material.line','glass_order_id')
-	mtf_requirement_id = fields.Many2one('mtf.requisition',string=u'Requisición')
+	mtf_requirement_ids = fields.One2many('mtf.requisition','order_id',string=u'Requisición')
 	mtf_req_line_ids = fields.Many2many('mtf.requisition.material.line',compute='_get_mtf_req_line_ids')
-	mtf_have_reqs = fields.Boolean('Tiene Requerimientos',compute='_get_mtf_req_line_ids')
+	mtf_have_reqs = fields.Boolean('Tiene Requerimientos',compute='_get_mtf_req_line_ids',store=True)
 
 	@api.depends('line_ids')
 	def _get_mtf_req_line_ids(self):
@@ -28,13 +28,4 @@ class GlassOrder(models.Model):
 class GlassOrderLine(models.Model):
 	_inherit = 'glass.order.line'
 
-	#mtf_temp_process_line_id = fields.Many2one('mtf.template.process.line',string=u'Línea de procesos')
-
-	#mtf_template_id = fields.Many2one(compute='_get_master_template',string='Ficha Maestra',store=True)
 	mtf_template_id = fields.Many2one('mtf.template',string='Ficha Maestra')
-
-	# @api.depends('calc_line_id')
-	# def _get_master_template(self):
-	# 	for line in self:
-	# 		calc = line.calc_line_id
-	# 		line.mtf_template_id = calc.parent_id.template_id.id if calc.from_insulado else calc.template_id.id
