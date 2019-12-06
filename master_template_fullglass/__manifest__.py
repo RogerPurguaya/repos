@@ -31,6 +31,7 @@
 		'views/glass_order.xml',
 		'views/mtf_parameter_config.xml',
 		'wizard/mtf_confirm_update_template.xml',
+		'wizard/mtf_req_material_pool_wizard.xml',
 	],
 	'demo': [],
 	'css':[

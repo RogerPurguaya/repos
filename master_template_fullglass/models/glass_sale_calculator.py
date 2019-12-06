@@ -8,7 +8,7 @@ class GlassSaleCalculator(models.Model):
 
 	type_calculator = fields.Selection(selection_add=[('insulado_calculator','Calculadora de Insulados')])
 	template_id = fields.Many2one('mtf.template',string='Plantilla Maestra',readonly=True)
-
+	
 	def save_calculator(self):
 		# update quantity and unit price
 		res = super(GlassSaleCalculator,self).save_calculator()
@@ -224,13 +224,13 @@ class GlassSaleCalculatorLine(models.Model):
 				'mtf_sale_price':sale_price * rec.quantity,
 			})
 		return {"type": "ir.actions.do_nothing",} 
-		
-class MtfInsuladoMaterialLine(models.Model):
+
+class MtfRequisitionMaterialLine(models.Model):
 	_name = 'mtf.requisition.material.line'
 	#_name = 'mtf.insulado.material.line'
 	
 	calculator_line_id = fields.Many2one('glass.sale.calculator.line',string=u'Línea de calculadora asociada',required=True,ondelete='cascade')
-
+	#requisition_id = Many2one('mtf.requisition',string=u'Requisición')
 	template_line_id = fields.Many2one('mtf.template.line',help=u'Línea de ficha maestra asociada')
 	product_id = fields.Many2one(related='template_line_id.product_id')
 	default_code = fields.Char(related='template_line_id.default_code')
@@ -249,4 +249,4 @@ class MtfInsuladoMaterialLine(models.Model):
 			if values.get('not_cost',False):
 				msg = u'Se estableció el producto de ficha maestra <a href=# data-oe-model=product.product data-oe-id=%d>%s</a> como no material propio y no costeado.'%(rec.product_id.id,rec.product_id.name)
 				rec.calculator_line_id.calculator_id.order_id.message_post(body=msg)
-		return super(MtfInsuladoMaterialLine,self).write(values)
+		return super(MtfRequisitionMaterialLine,self).write(values)

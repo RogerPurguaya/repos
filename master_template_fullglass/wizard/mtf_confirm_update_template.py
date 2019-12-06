@@ -2,8 +2,6 @@
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 
-
-
 class MtfConfirmUpdateTemplate(models.TransientModel):
 	_name = 'mtf.confirm.update.template'
 

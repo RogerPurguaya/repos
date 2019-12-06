@@ -7,10 +7,6 @@ from odoo.exceptions import UserError,ValidationError
 class MasterTemplate(models.Model):
 	_name = 'mtf.template'
 	
-	# campos del product:
-	# product_id = fields.Many2one('product.product',ondelete='restrict',required=True,
-	# 	domain=lambda self: [('categ_id','=',self.env['glass.order.config'].search([],limit=1).category_insulados_id.id)],
-	# 	string='Producto Insulado',copy=False)
 	product_id = fields.Many2one('product.product',ondelete='restrict',string='Producto',copy=False)
 	code = fields.Char(u'Código de producto',related='product_id.default_code')
 	measure = fields.Float('Medida')
@@ -135,7 +131,7 @@ class MasterTemplate(models.Model):
 		self.ensure_one()
 		ctx = self._context
 		not_costed_lines = ctx.get('not_costed_lines',[]) # si no se costea desde calculadora
-		lines = self.line_ids.filtered(lambda l: not l.not_costed and l.id not in not_costed_lines)
+		lines = self.line_ids.filtered(lambda l: not l.not_costed)
 		line_vals = dict.fromkeys(lines.ids)
 
 		base_in = ctx.get('base',self.std_base)
@@ -147,7 +143,8 @@ class MasterTemplate(models.Model):
 			raise UserError('La altura ingresada debe estar entre los rangos de %d a %d'%(self.min_height,self.max_height))
 
 		for line in lines:
-			line_vals[line.id] = line._compute_line(base_in,height_in)
+			special_price = bool(line.id in not_costed_lines)
+			line_vals[line.id] = line._compute_line(base_in,height_in,special_price)
 
 		values = line_vals.values()
 		mp,insumos = [],[]
@@ -270,7 +267,10 @@ class MasterTemplateLine(models.Model):
 			
 	@api.onchange('product_id')
 	def _onchange_product_id(self):
-		self.unit_price = self.product_id.standard_price # por mientras
+		# por mientras...
+		std_price = self.product_id.standard_price
+		self.unit_price = std_price 
+		self.un_price_special = std_price
 
 	@api.onchange('depending_on')
 	def _onchange_depending_on(self):
@@ -292,7 +292,7 @@ class MasterTemplateLine(models.Model):
 		attr = self.product_id.atributo_ids.filtered(lambda x: x.atributo_id.id==4)
 		self.model = attr[0].valor_id.name if any(attr) else ''
 
-	def _compute_line(self,base,height):
+	def _compute_line(self,base,height,special_price=False):
 		self.ensure_one()
 		total_units = 0.0
 		depending_on = self.depending_on
@@ -326,13 +326,14 @@ class MasterTemplateLine(models.Model):
 		#ig_loc = config.gastos_insumos_location_id 
 		if not mp_loc:
 			raise UserError(u'No se ha encontrado la configuración para las ubicaciones de productos de Ficha Maestra.')
+		unit_price = self.un_price_special if special_price else self.unit_price
 		return {
 			'product_id':self.product_id.id,
 			'base': base,
 			'height':height,
 			'fixed': self.fixed,
 			'total_units': total_units,
-			'amount_untaxed': (total_units * self.unit_price)/1.18,
+			'amount_untaxed': (total_units * unit_price)/1.18,
 			'pos_ins_crystal':self.pos_ins_crystal,
 			'to_produce':self.to_produce,
 			'raw_material':bool(self.product_id.property_stock_inventory==mp_loc)

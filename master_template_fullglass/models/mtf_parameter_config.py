@@ -11,6 +11,7 @@ class MtfParameterConfig(models.Model):
 	mat_prima_location_id = fields.Many2one('stock.location',string='Ubicación de Materia Prima',help=u'Ubicación que determinará si una línea de ficha maestra será materia prima')
 	category_insulados_id = fields.Many2one('product.category',string='Categ. Insulados') # cristales insulados
 
+	requisition_seq_id = fields.Many2one('ir.sequence',string='Secuencia para requisiciones')
 	#gastos_insumos_location_id = fields.Many2one('stock.location',string='Ubicación de Gastos Insumos',help=u'Ubicación que determinará si una línea de ficha maestra será un Gasto/Insumo')
 
 	discount_categ_a = fields.Float(u'Descuento categoría A',default=0.0)

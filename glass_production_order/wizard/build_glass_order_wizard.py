@@ -93,7 +93,7 @@ class BuildGlassOrderWizard(models.TransientModel):
 	def _prepare_glass_order_vals(self,glass_line_vals,order_name):
 		## make O.P. name
 		# param: glass_line_vals = [{values},{values},...]
-		# param: order_name = name of order	
+		# param: order_name = name of order
 		lim_templado =  self.config_id.limit_ids.filtered(lambda x: x.motive_limit=='templado')
 		if not lim_templado:
 			raise UserError(u"No se ha encontrado la configuración de plazos de producción para templados.")
