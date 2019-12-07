@@ -10,7 +10,14 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Requisiciones de Ficha" name="template_requisitions">
                         <group>
-                            <!-- <field name=""/> -->
+                            <field name="mtf_req_line_ids" invisible="1"/>
+                            <field name="mtf_requirement_ids" readonly="1" nolabel="1">
+                                <tree>
+                                    <field name="name"/> 
+                                    <field name="user_id"/> 
+                                    <field name="state"/> 
+                                </tree>
+                            </field>
                         </group>
                     </page>    
                 </xpath>

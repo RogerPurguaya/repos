@@ -17,7 +17,7 @@
                     </div>
                         <group>
                             <group>
-                                <field name="order_id" required="1"/>
+                                <field name="order_id" required="1" options="{'no_create':True}"/>
                                 <field name="picking_type_id" required="1"/>
                                 <field name="req_traslate_motive" required="1"/>
                             </group>
@@ -43,13 +43,22 @@
 
 
         <!-- mtf.requisition.pool.wizard action window -->
-        <record id="mtf_requisition_pool_wizard_action" model="ir.actions.act_window">
-            <field name="name">mtf.requisition.pool.wizard.action</field>
+        <!-- <record id="mtf_requisition_pool_wizard_action" model="ir.actions.act_window">
+            <field name="name">Pool de Ficha maestra/Insulados</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">mtf.requisition.pool.wizard</field>
             <field name="view_mode">form</field>
             <field name="view_type">form</field>
             <field name="target">new</field>
+        </record> -->
+
+        <!-- mtf_requisition_pool_wizard action server -->
+        <record id="mtf_requisition_pool_wizard_action" model="ir.actions.server">
+            <field name="name">Pool de Ficha maestra/Insulados</field>
+            <field name="model_id" ref="model_mtf_requisition_pool_wizard" />
+            <field name="code">
+                    action=model.get_new_element()
+            </field>
         </record>
 
         <!-- This Menu Item must have a parent and an action -->

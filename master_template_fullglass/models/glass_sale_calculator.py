@@ -124,6 +124,34 @@ class GlassSaleCalculatorLine(models.Model):
 			'target': 'new',
 			}
 
+	def _get_insulados_dict_crystals(self,extra_domain=[],only_completes=False):
+		"""Obtener cristales para formar un insulado
+			-la cantidad de cristales deberia corresponder a la cantidad de child_ids de la línea de calculadora
+			TODO: en el caso de laminados (q se piden por requisición pero forma parte del insulado, solo
+			tendría un child_id)
+
+		"""
+		# dict = {34:{1:[345,676],2:[2,3,4,5]}}
+		# return un dicc de {calc_line_id:{cris_q:[lot_line_ids]...}
+		LotLine = self.env['glass.lot.line']
+		items = self.filtered('insulado')
+		dict_vals = dict.fromkeys(items.ids)
+
+		for line in self.filtered('insulado'):
+			child_nums = [i.get_crystal_numbers() for i in line.child_ids]
+			child_nums = zip(*child_nums)
+			sub_dict = {}
+			for num in child_nums: # child_nums: [(1.2,1.2),(2.2,2.2)]
+				num = list(map(str,num))
+				domain = [('nro_cristal','in',num),('calc_line_id.parent_id','=',line.id)]+extra_domain
+				lot_lines = LotLine.search(domain)
+				if only_completes and len(lot_lines)<len(num):
+					continue
+				sub_dict.update({num[0][:1]:lot_lines.ids})
+			dict_vals[line.id] = sub_dict
+
+		return dict_vals
+
 	def _get_not_costed_lines(self):
 		return self.material_line_ids.filtered('not_cost') 
 	

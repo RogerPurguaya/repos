@@ -8,7 +8,7 @@ class GlassLotLine(models.Model):
 
 	#mtf_temp_process_line_id = fields.Many2one(related='order_line_id.mtf_temp_process_line_id')
 	mtf_template_id = fields.Many2one(related='order_line_id.mtf_template_id',store=True)
-	from_insulado = fields.Boolean(related='calc_line_id.from_insulado')
+	from_insulado = fields.Boolean(related='calc_line_id.from_insulado',store=True)
 
 	def _get_requested_stages(self):
 		res = super(GlassLotLine,self)._get_requested_stages()
