@@ -119,7 +119,7 @@ class GlassLotLine(models.Model):
 	calc_line_id = fields.Many2one('glass.sale.calculator.line',copy=False)
 	order_line_id = fields.Many2one('glass.order.line')
 	nro_cristal = fields.Char(u"Número de Cristal",size=10)
-	order_prod_id = fields.Many2one('glass.order',related='order_line_id.order_id',string="OP")
+	order_prod_id = fields.Many2one('glass.order',related='order_line_id.order_id',string="OP",store=True)
 	order_date_prod = fields.Date('Fecha OP',related='order_prod_id.date_production')
 	search_code = fields.Char(u'Código de búsqueda',index=True)
 	base1 = fields.Integer("Base1 (L 4)")
@@ -160,7 +160,7 @@ class GlassLotLine(models.Model):
 	#warehouse = fields.Char(related='location.location_code.display_name',string='Almacen')
 	_rec_name="search_code"
 
-	@api.depends('stage_ids')
+	@api.depends('stage_ids.done')
 	def _compute_checked_stages(self):
 		static_stg = ('optimizado','corte','pulido','lavado','entalle','horno','templado','producido','insulado','ingresado','entregado','arenado','comprado')
 		for line in self:
@@ -282,6 +282,7 @@ class GlassLotLine(models.Model):
 				return error_msg
 			else:
 				raise UserError(error_msg)
+		#self._compute_checked_stages()
 		return True
 
 	def _prepare_record_stage_vals(self,stage,done=False):

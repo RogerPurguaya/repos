@@ -10,14 +10,10 @@
                     <button string="Cancelar" name="cancel_lot" type="object" states='done' confirm="Esta operación es irreversible ¿Desea Continuar?"/>
 
                     <button string="Optimizar" name="optimize_lot" type="object" states='draft,done' groups="glass_production_order.production_optimization"/>
-
-                    
                     <field name="state" widget="statusbar" nolabel="1"/>
                 </header>
                 <sheet>
-                    
                     <h1>Lote: <field name="name" nolabel="1" readonly="1" default="Nuevo"/> </h1>
-
                     <group>
                         <group>
                             <field name="date"/>
