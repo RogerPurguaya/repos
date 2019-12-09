@@ -32,6 +32,7 @@
 		'views/sale_order_view.xml',
 		'views/glass_tracing_production_stock_view.xml',
 		'views/glass_requisition_view.xml',
+		'wizard/views_wizards/glass_production_control_wizard_view.xml',
 		'views/product_uom_view.xml',
 		'views/purchase_requisition_view.xml',
 		'views/glass_furnace_out_view.xml',
@@ -53,7 +54,6 @@
 		'wizard/views_wizards/glass_pool_wizard_view.xml',
 		'wizard/views_wizards/glass_croquis_sale_wizard_view.xml',
 		'wizard/views_wizards/build_glass_order_wizard.xml',
-		'wizard/views_wizards/glass_production_control_wizard_view.xml',
         ],
     'css': [
 		'static/src/css/sheet.css'

@@ -135,7 +135,8 @@ class GlassProductionUserStage(models.Model):
 	_name="glass.production.user.stage"
 
 	user_id = fields.Many2one('res.users','Usuario')
-	stage = fields.Selection([('corte','Corte'),('pulido','Pulido'),('entalle','Entalle'),('lavado','Lavado')],'Etapa')
+	#stage = fields.Selection([('corte','Corte'),('pulido','Pulido'),('entalle','Entalle'),('lavado','Lavado')],'Etapa')
+	stage_id = fields.Many2one('glass.stage',string='Etapa')
 	config_id = fields.Many2one('glass.order.config','Mainid')
 	order_prod = fields.Integer('Orden de Proceso')
 

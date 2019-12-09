@@ -128,7 +128,8 @@
                             <field name="userstage">
                                 <tree editable="button">
                                     <field name="user_id"/>
-                                    <field name="stage"/>
+                                    <field name="stage_id"/>
+                                    <!-- <field name="stage"/> -->
                                     <field name="order_prod"/>
                                 </tree>
                             </field>

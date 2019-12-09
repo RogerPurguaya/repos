@@ -156,9 +156,8 @@
                 <group>
                     <group>
                         <field name="motive" required="1"/>
-                        <field name="stage" required="1"/>
+                        <field name="stage_id" required="1"/>
                         <field name="note" string="Observación"/>
-
                     </group>
                     <group>
                         <field name="date_fisical"/>

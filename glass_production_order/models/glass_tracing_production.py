@@ -76,21 +76,21 @@ class GlassListMainWizard(models.TransientModel):
 
 		if self.requisition_id and self.search_param == 'requisition':
 						
-			lot_lines = self.requisition_id.mapped('lot_ids').mapped('lot_id').mapped('line_ids')
+			lot_lines = self.requisition_id.mapped('lot_ids.lot_id').with_context(active_test=False).mapped('line_ids')
 			orders = self._get_data(lot_lines)
 
 		elif self.order_id and self.search_param == 'glass_order':
-			lineas = self.order_id.mapped('line_ids')
-			lot_lines=(lineas.filtered(lambda x: x.lot_line_id)).mapped('lot_line_id')
+			lineas = self.order_id.line_ids
+			lot_lines=(lineas.with_context(active_test=False).filtered('lot_line_id')).mapped('lot_line_id')
 			orders = self._get_data(lot_lines)
 			lines_without_lot=lineas.filtered(lambda x: not x.lot_line_id and x.state != 'cancelled')
 			# en este caso sacamos los cristales rotos manualmente:
 			if self.show_breaks:
-				glass_breaks = self.env['glass.lot.line'].search([('order_line_id','in',lineas.ids),('is_break','=',True)])
+				glass_breaks = self.env['glass.lot.line'].with_context(active_test=False).search([('order_line_id','in',lineas.ids),('is_break','=',True)])
 				orders += glass_breaks
 
 		elif self.lote_id and self.search_param == 'lot':
-			orders = self._get_data(self.lote_id.mapped('line_ids')) 
+			orders = self._get_data(self.lote_id.with_context(active_test=False).line_ids)
 		
 		if len(orders)==0 and len(lines_without_lot)==0:
 			raise exceptions.Warning(u'No se ha encontrado información.')
@@ -242,7 +242,7 @@ class GlassListWizard(models.Model):
 			'res_id': wizard.id,
 			'view_type': 'form',
 			'view_mode': 'form',
-			'res_model': 'show.detail.tracing.line.wizard',
+			'res_model': wizard._name,
 			'view_id': view.id,
 			'type': 'ir.actions.act_window',
 			'target': 'new',
@@ -251,17 +251,17 @@ class GlassListWizard(models.Model):
 	@api.multi
 	def break_crystal(self):
 		module = __name__.split('addons.')[1].split('.')[0]
-		view = self.env.ref('%s.view_glass_respos_wizard_form' % module)
-		data = {
+		wiz = self.env['glass.respos.wizard'].create({'lot_line_id':self.lot_line_id.id})
+		return {
 			'name': _('Rotura de Cristales'),
+			'res_id':wiz.id,
 			'view_type': 'form',
 			'view_mode': 'form',
-			'res_model': 'glass.respos.wizard',
-			'view_id': view.id,
+			'res_model': wiz._name,
+			'view_id': self.env.ref('%s.view_glass_respos_wizard_form' % module).id,
 			'type': 'ir.actions.act_window',
 			'target': 'new',
 		} 
-		return data
 
 	@api.multi
 	def show_croquis(self):
@@ -305,38 +305,42 @@ class GlassReposWizard(models.TransientModel):
 		('Planimetria','Planimetria'), 
 		('Error ventas','Error ventas'), 
 		('Materia prima','Materia prima')])
-	stage = fields.Selection([
-		('corte','Corte'), 
-		('pulido','Pulido'), 
-		('entalle','Entalle'), 
-		('lavado','Lavado'), 
-		('templado','Templado'),
-		('horno','Horno'),
-		('insulado','Insulado')],'Etapa')
-
+	lot_line_id = fields.Many2one('glass.lot.line',string=u'Línea de lote')
+	stage_id = fields.Many2one('glass.stage',string='Etapa',domain=[('name','in',('corte','pulido','entalle','lavado','templado','horno'))])
 	note = fields.Text(u'Observación')
+	# stage = fields.Selection([
+	# 	('corte','Corte'), 
+	# 	('pulido','Pulido'), 
+	# 	('entalle','Entalle'), 
+	# 	('lavado','Lavado'), 
+	# 	('templado','Templado'),
+	# 	('horno','Horno'),
+	# 	('insulado','Insulado')],'Etapa')
 	
-	@api.one
 	def makerepo(self):
-		active_ids = self._context['active_ids']
-		line = self.env['glass.list.wizard'].browse(active_ids)
-		
-		stage = line.lot_line_id.stage_ids.filtered(lambda x: x.stage == self.stage)
-		if len(stage) == 0:
-			raise UserError(u'El cristal a no ha pasado por la etapa seleccionada!\nSeleccione la ultima etapa exitosa del cristal')	
-						
-		stage_obj = self.env['glass.stage.record'].create({
-			'user_id':self.env.uid,
-			'date':stage[0].date, #registrar rotura con la fecha y hora de la etapa sel.
-			'time':stage[0].time,
-			'stage':'roto',
-			'lot_line_id':line.lot_line_id.id,
+		line = self.lot_line_id
+		stage = line.stage_ids.filtered(lambda x: x.stage_id==self.stage_id and x.done)
+		if not stage:
+			raise UserError(u'El cristal a no ha pasado por la etapa seleccionada!\nSeleccione la última etapa exitosa del cristal')
+		# stage_obj = self.env['glass.stage.record'].create({
+		# 	'user_id':self.env.uid,
+		# 	'date':stage[0].date, #registrar rotura con la fecha y hora de la etapa sel.
+		# 	'time':stage[0].time,
+		# 	'stage':'roto',
+		# 	'lot_line_id':line.lot_line_id.id,
+		# 	'break_motive':self.motive,
+		# 	'break_stage':self.stage,
+		# 	'break_note':self.note or ''
+		# })
+
+		line.order_line_id.write({
+			'last_lot_line':line.id,
+			'glass_break':True,
+			'lot_line_id':False,
+			'is_used':False,})
+		break_info = {
 			'break_motive':self.motive,
-			'break_stage':self.stage,
-			'break_note':self.note or ''
-		})
-		line.order_line.last_lot_line=line.lot_line_id.id
-		line.order_line.glass_break=True
-		line.order_line.lot_line_id=False
-		line.order_line.is_used=False
-		line.lot_line_id.is_break=True
+			'break_stage':self.stage_id.id,
+			'break_note':self.note or '',
+		}
+		line.with_context(force_register=True).register_stage('rotura',break_info)

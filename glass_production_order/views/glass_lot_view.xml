@@ -119,6 +119,85 @@
         <field name="view_type">form</field>
         <field name="view_mode">tree,form</field>
     </record>
+
+
+        <!-- glass.lot.line form view -->
+        <record id="glass_lot_line_view_form" model="ir.ui.view">
+            <field name="name">glass.lot.line.view.form</field>
+            <field name="model">glass.lot.line</field>
+            <field name="arch" type="xml">
+                <form string="Línea de Lote">
+                    <sheet>
+                        <group readonly="1">
+                            <group string="Generales">
+                                <field name="lot_id"/>
+                                <field name="order_prod_id"/>
+                                <field name="order_date_prod"/>
+                                <field name="product_id"/>
+                                <field name="nro_cristal"/>
+                                <field name="search_code"/>
+                            </group>
+                            <group string="Medidas/Características">
+                                <field name="base1"/>
+                                <field name="base2"/>
+                                <field name="altura1"/>
+                                <field name="altura2"/>
+                                <field name="area"/>
+                                <field name="measures"/>
+                                <field name="page_number"/>
+                                <field name="descuadre"/>
+                            </group>
+                            <group string="Fases">
+                                <field name="optimizado"/>
+                                <field name="corte"/>
+                                <field name="pulido"/>
+                                <field name="lavado"/>
+                                <field name="entalle"/>
+                                <field name="horno"/>
+                                <field name="templado"/>
+                                <field name="insulado"/>
+                                <field name="producido"/>
+                                <field name="ingresado"/>
+                                <field name="entregado"/>
+                                <field name="arenado"/>
+                                <field name="comprado"/>
+                                <field name="is_break"/>
+                                <field name="requisicion"/>
+                            </group>
+                            <group string="Etapas">
+                                <field name="stage_ids" readonly="1">
+                                    <tree>
+                                        <field name="user_id"/>
+                                        <field name="stage_id"/>
+                                        <field name="date"/>
+                                        <field name="done"/>
+                                    </tree>
+                                </field>
+                            </group>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+
+        <record id="glass_lot_line_view_tree" model="ir.ui.view">
+            <field name="name">glass.lot.line.view.tree</field>
+            <field name="model">glass.lot.line</field>
+            <field name="arch" type="xml">
+                <tree>
+                    <field name="order_prod_id"/>
+                    <field name="lot_id"/>
+                    <field name="product_id"/>
+                    <field name="nro_cristal"/>
+                    <field name="base1"/>
+                    <field name="base2"/>
+                    <field name="altura1"/>
+                    <field name="altura2"/>
+                    <field name="area"/>
+                </tree>
+            </field>
+        </record>
  
     <menuitem id="glass_lot_menu" parent="glass_order_m_menu" action="glass_lot_action" sequence="1" groups="glass_production_order.group_glass_user"/>
 

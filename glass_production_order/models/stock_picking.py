@@ -8,8 +8,10 @@ class StockPicking(models.Model):
 
 	sale_picking = fields.Boolean() # # para checar que la etrega es por cristales
 	driver_delivery=fields.Char('Conductor')
-	apt_in = fields.Boolean() # si es albaran de ingreso a apt
+	apt_in = fields.Boolean('Apt') # si es albaran de ingreso a apt
 
+
+	# esta mrd del reopen debería quitarse...
 	@api.multi
 	def action_revert_done(self):
 		reqs = self.env['glass.requisition'].search([('state','in',('process','confirm'))])

@@ -7,13 +7,17 @@ import PyPDF2
 
 class GlassProductionControlWizard(models.TransientModel):
 	_name='glass.productioncontrol.wizard'
-	stage = fields.Selection([('corte','Corte'),('pulido','Pulido'),('entalle','Entalle'),('lavado','Lavado')],'Etapa')
+	#stage = fields.Selection([('corte','Corte'),('pulido','Pulido'),('entalle','Entalle'),('lavado','Lavado')],'Etapa')
+	stage_id = fields.Many2one('glass.stage',string='Etapa',domain=[('name','in',('corte','pulido','entalle','lavado'))])
+	#stage_id = fields.Many2one('glass.stage',string='Etapa')
+	stage_name = fields.Char(related='stage_id.name')
 	search_code = fields.Char('Producto')
 	production_order = fields.Many2one('glass.order','OP')
 	image_glass = fields.Binary("imagen")
 	nro_cristal = fields.Char("Nro. Cristal")
 	messageline= fields.Char('Mensaje')
 	path = fields.Char('Path File')
+	#conf_id = fields.Many2one('Config',default=get_default_config)
 
 	@api.multi
 	def get_new_element(self):
@@ -35,18 +39,17 @@ class GlassProductionControlWizard(models.TransientModel):
 		}
 
 	@api.model
-	def default_get(self,fields):
-		res =super(GlassProductionControlWizard,self).default_get(fields)
-		conf = self.env['glass.order.config'].search([])
-		if len(conf)==0:
+	def default_get(self,default_fields):
+		res =super(GlassProductionControlWizard,self).default_get(default_fields)
+		userstage = self.env['glass.order.config'].search([],limit=1).userstage
+		if not userstage:
 			raise UserError(u'No se encontraron los valores de configuración de producción')	
-		conf = self.env['glass.order.config'].search([])[0]
 		ustage = False
-		for userstage in conf.userstage:
-			if userstage.user_id.id == self.env.user.id:
-				ustage=userstage
+		for item in userstage:
+			if item.user_id.id == self.env.user.id:
+				ustage=item
 		if ustage:
-			res.update({'stage':ustage.stage})
+			res.update({'stage_id':ustage.stage_id.id})
 		else:
 			raise UserError(u'El usuario actual no tiene permisos para acceder a esta funcionalidad')		
 		return res
@@ -57,15 +60,15 @@ class GlassProductionControlWizard(models.TransientModel):
 		this  = self.browse(self._origin.id)
 		res   = {}
 		code  = self.search_code or 'undefined'
-		stage = self.stage
-		line = self.env['glass.lot.line'].search([('search_code','=',code)])
-		if len(line)==1:
+		stage = self.stage_name
+		line = self.env['glass.lot.line'].search([('search_code','=',code)],limit=1)
+		if line:
 			self.messageline = self.search_code = ''
 			if stage in ['lavado','entalle']:
-				if stage=='entalle' and line.calc_line_id.entalle==0:
+				if stage=='entalle' and not line.calc_line_id.entalle:
 					res = {'production_order':False,'nro_cristal':False,'messageline':'El cristal no tiene etapa de entalle'}
 					return {'value':res}
-				res = self.save_stage(stage,line)[0]
+				res = self.save_stage(line)
 				try:
 					file = open(line.order_line_id.image_page_number,'rb')
 					content = file.read()
@@ -84,7 +87,7 @@ class GlassProductionControlWizard(models.TransientModel):
 					with open(this.path, "wb") as outputStream: 
 						writer.write(outputStream) #write pages to new PDF
 			elif stage in ['corte','pulido']:
-				res = self.save_stage(stage,line)[0]
+				res = self.save_stage(line)
 				res.update({'image_glass':line.image_glass})
 		else:
 			msg = u'Código no encontrado!' if self.search_code else ''
@@ -97,23 +100,16 @@ class GlassProductionControlWizard(models.TransientModel):
 					writer.write(outputStream)
 		return {'value':res}
 
-	@api.one
-	def save_stage(self,stage,line):
-		if line[stage]:
+	@api.model
+	def save_stage(self,line):
+		if line[self.stage_name]:
 			return {
 				'production_order':False,
 				'nro_cristal':False,
 				'image_glass':False,
-				'messageline':'El cristal ya fue procesado en la etapa :'+stage.upper(),
+				'messageline':'El cristal ya fue procesado en la etapa :'+self.stage_name.upper(),
 				}
-		self.env['glass.stage.record'].create({
-			'user_id':self.env.uid,
-			'date':(datetime.now()-timedelta(hours=5)).date(),
-			'time':(datetime.now()-timedelta(hours=5)).time(),
-			'stage':stage,
-			'lot_line_id':line.id,
-		})
-		line.write({stage:True})
+		line.with_context(force_register=True).register_stage(self.stage_id)
 		return {
 				'production_order':line.order_prod_id.id,
 				'nro_cristal':line.nro_cristal,

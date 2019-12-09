@@ -102,26 +102,26 @@ class Glass_tracing_Production_Stock(models.TransientModel):
 			sale_order_lines = invoice_lines.mapped('sale_line_ids')
 			sale_order = sale_order_lines.mapped('order_id')
 			if len(set(sale_order)) == 1:
-				lines = sale_order.op_ids.mapped('line_ids').mapped('lot_line_id')
+				lines = sale_order.op_ids.mapped('line_ids.lot_line_id')
 				aux_lines = sale_order.op_ids.mapped('line_ids')
 				lines = self._get_data(lines)
 			if self.show_breaks:
-				glass_breaks = self.env['glass.lot.line'].search([('order_line_id','in',aux_lines.ids),('is_break','=',True)])
+				glass_breaks = self.env['glass.lot.line'].with_context(active_test=False).search([('order_line_id','in',aux_lines.ids),('is_break','=',True)])
 				lines += glass_breaks
 
 		elif self.order_id and self.search_param == 'glass_order':
-			lines=(self.order_id.line_ids.filtered(lambda x:x.lot_line_id)).mapped('lot_line_id')
+			lines = self.order_id.line_ids.filtered('lot_line_id').mapped('lot_line_id')
 			lines = self._get_data(lines)
 			if self.show_breaks:
-				glass_breaks = self.env['glass.lot.line'].search([('order_line_id','in',self.order_id.line_ids.ids),('is_break','=',True)])
+				glass_breaks = self.env['glass.lot.line'].with_context(active_test=False).search([('order_line_id','in',self.order_id.line_ids.ids),('is_break','=',True)])
 				lines += glass_breaks
 
 		elif self.customer_id and self.search_param == 'customer':
 			sale_orders = self.env['sale.order'].search([('partner_id','=',self.customer_id.id)])
-			lines = sale_orders.mapped('op_ids').mapped('line_ids').mapped('lot_line_id')
+			lines = sale_orders.mapped('op_ids.line_ids').mapped('lot_line_id')
 			lines = self._get_data(lines)
 			if self.show_breaks:
-				glass_breaks = self.env['glass.lot.line'].search([('order_line_id','in',sale_orders.mapped('op_ids').mapped('line_ids').ids),('is_break','=',True)])
+				glass_breaks = self.env['glass.lot.line'].with_context(active_test=False).search([('order_line_id','in',sale_orders.mapped('op_ids.line_ids').ids),('is_break','=',True)])
 				lines += glass_breaks
 
 		if len(lines)==0:

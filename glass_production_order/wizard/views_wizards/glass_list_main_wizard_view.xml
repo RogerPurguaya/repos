@@ -70,7 +70,7 @@
             <form string="Cristales Rotos">
                 <group>
                     <field name="motive" required="1"/>
-                    <field name="stage" required="1"/>
+                    <field name="stage_id" required="1" options="{'no_create':True}"/>
                 </group>
                 <footer>
                     <button name="makerepo" type="object" string="Reporta rotura"/>

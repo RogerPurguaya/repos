@@ -10,8 +10,6 @@ class MtfRequisitionPoolWizard(models.TransientModel):
 	req_traslate_motive = fields.Many2one('einvoice.catalog.12',u'Motivo de traslado')
 	
 	next_req_number = fields.Char(u'Sig Número')
-	# order_id = fields.Many2one('glass.order',u'Orden de producción',
-	# 						domain=[('state','in',('process','confirmed')),('mtf_have_reqs','=',True)])
 	order_id = fields.Many2one('glass.order',u'Orden de producción',domain=lambda self: self._context.get('available_ops',[]))
 
 	line_ids = fields.One2many('mtf.requisition.pool.wizard.line','wizard_id')

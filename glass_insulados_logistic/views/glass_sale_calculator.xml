@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+     <record id="glass_calculator_insulados_form_view" model="ir.ui.view">
+            <field name="name">glass.sale.calculator.form.view</field>
+            <field name="model">glass.sale.calculator</field>
+            <field name="arch" type="xml">
+                <form>
+                    <group string="Calculadora de Insulados" >
+                        <field name="line_ids" nolabel="1" attrs="{'readonly':[('is_locked','=',True)]}" context="{'default_insulado':True}">
+                            <tree editable="bottom">
+                                <button string="Imagen" name="show_crystal_image" type="object" context="{'module_name':'master_template_fullglass'}"/>
+                                <button string="Ficha" name="show_template_details" type="object"/>
+                                <field name="quantity" required="1"/> 
+                                <field name="crystal_num" required="1"/> 
+                                <field name="base1" required="1"/> 
+                                <field name="base2" required="1"/> 
+                                <field name="height1" required="1"/> 
+                                <field name="height2" required="1"/> 
+                                <field name="descuadre"/>
+                                <field name="page_number" required="1"/>
+                                <field name="polished_id" string="Pulido_cristal"/>
+                                <field name="insulado" readonly="1"/>
+                                <field name="template"/>
+                                <field name="packed"/>
+                                <field name="perimeter" readonly="1"/> 
+                                <field name="area" readonly="1"/>
+                            </tree>
+                            <form string="Línea de Calculadora">
+                                <sheet string="Línea de calculadora">
+                                    <group readonly="1">
+                                        <group string="Especificaciones/varios">
+                                            <field name="crystal_num"/>
+                                            <field name="polished_id"/>
+                                            <field name="measures"/>
+                                            <field name="page_number"/>
+                                            <field name="arenado"/>
+                                            <field name="lavado"/>
+                                            <field name="entalle"/>
+                                            <field name="descuadre"/>
+                                            <field name="packed"/>
+                                            <field name="template"/>
+                                        </group>
+                                        <group string="Medidas/Cantidades">
+                                            <field name="base1"/>
+                                            <field name="base2"/>
+                                            <field name="height1"/>
+                                            <field name="height2"/>
+                                            <field name="quantity"/>
+                                            <field name="perimeter"/>
+                                            <field name="area"/>
+                                            <field name="sold_area"/>
+                                        </group>
+                                    </group>
+                                    <group string="Critales componentes">
+                                        <field name="child_ids" readonly="1" nolabel="1">
+                                            <tree>
+                                                <field name="quantity"/> 
+                                                <field name="crystal_num"/> 
+                                                <field name="base1"/> 
+                                                <field name="base2"/> 
+                                                <field name="height1"/> 
+                                                <field name="height2"/> 
+                                                <field name="descuadre"/>
+                                                <field name="page_number"/>
+                                                <field name="polished_id" string="Pulido"/>
+                                                <field name="template"/>
+                                                <field name="packed"/>
+                                                <field name="perimeter"/> 
+                                                <field name="area"/>
+                                            </tree>
+                                        </field>
+                                    </group>
+                                </sheet>
+                            </form>
+                        </field>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="order_id" invisible="1"/>
+                            <field name="is_locked"/>
+                            <field name="qty_invoiced" readonly="1"/>
+                            <field name="qty_invoiced_rest"  readonly="1"/>
+                            <field name="product_id" readonly="1" string="Producto"/>
+                            <field name="sale_uom_id" readonly="1" string="Unidad de medida"/>
+                            <field name="type_calculator" invisible="1"/>
+                        </group>
+                        <group class="oe_subtotal_footer oe_left" name="sale_total">
+                            <field name="total_perimeter"/>
+                            <field name="total_area"/>
+                            <field name="total_sold_area"/>
+                            <field name="total_pieces" readonly="1"/>
+                        </group>
+                    </group>
+                    <footer>
+                        <button name="save_calculator" type="object" string="Guardar y aplicar" class="btn-primary" attrs="{'invisible':[('is_locked','=',True)]}"/>
+                    </footer>
+                </form>
+            </field>
+    </record>
+
+
+    <!-- glass.sale.calculator inherit form view -->
+    <record id="glass_calculator_form_view" model="ir.ui.view">
+        <field name="name">glass.sale.calculator.inherit.view.form</field>
+        <field name="model">glass.sale.calculator</field>
+        <field name="inherit_id" ref="sale_calculadora_it.glass_calculator_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='line_ids']/tree/button[@name='show_crystal_image']" position="after">
+                 <field name="template_id" invisible="1"/>
+                 <button type="object" name="show_template_details" class="oe_edit_only oe_link" string="Ficha" attrs="{'invisible':[('template_id','=',False)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+
+    <record id="glass_calculator_services_form" model="ir.ui.view">
+        <field name="name">glass.sale.calculator.inherit.view.form</field>
+        <field name="model">glass.sale.calculator</field>
+        <field name="inherit_id" ref="sale_calculadora_it.glass_calculator_services_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="////field[@name='line_ids']/tree/field[@name='quantity']" position="before">
+                 <field name="template_id" invisible="1"/>
+                 <button type="object" name="show_template_details" class="oe_edit_only oe_link" string="Ficha" attrs="{'invisible':[('template_id','=',False)]}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

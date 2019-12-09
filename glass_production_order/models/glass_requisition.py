@@ -122,13 +122,14 @@ class GlassRequisition(models.Model):
 		lots = self.lot_ids.mapped('lot_id')
 		lots.write({'requisition_id':self.id})
 		for line in lots.mapped('line_ids').filtered(lambda x: not x.is_break): 
-			stage_obj = self.env['glass.stage.record'].create({
-				'user_id':self.env.uid,
-				'date':(datetime.now()-timedelta(hours=5)).date(),
-				'time':(datetime.now()-timedelta(hours=5)).time(),
-				'stage':'requisicion',
-				'lot_line_id':line.id,
-			})
+			# TODO la requisición debería ser una etapa??
+			# stage_obj = self.env['glass.stage.record'].create({
+			# 	'user_id':self.env.uid,
+			# 	'date':(datetime.now()-timedelta(hours=5)).date(),
+			# 	'time':(datetime.now()-timedelta(hours=5)).time(),
+			# 	'stage':'requisicion',
+			# 	'lot_line_id':line.id,
+			# })
 			line.requisicion=True
 		self.write({
 			'name':conf.seq_requisi.next_by_id(),
@@ -174,15 +175,19 @@ class GlassRequisition(models.Model):
 
 	@api.one
 	def cancel(self):
+		done_p = self.picking_ids.filtered(lambda p: p.state=='done')
+		if done_p:
+			raise UserError(u'No es posible cancelar ésta Orden de Requisición debido a qque los siguientes albaranes asociados han sido procesados:\n%s\nDeberá extornar manualmente dichos albaranes para poder proceder.'%'\n'.join(done_p.mapped('name')))
+
 		for pick in self.picking_ids:
-			pick.action_revert_done()
+			#pick.action_revert_done()
 			pick.action_cancel()
 		for lot in self.lot_ids.mapped('lot_id'):
 			lot.requisition_id = False
 			for line in lot.line_ids.filtered(lambda x:x.requisicion and not x.is_break):
 				line.write({'requisicion':False})
-				stages = line.stage_ids.filtered(lambda x: x.stage == 'requisicion')
-				stages.unlink()
+				#stages = line.stage_ids.filtered(lambda x: x.stage == 'requisicion')
+				#stages.unlink()
 		self.raw_materials.write({'process':False})
 		self.scraps.write({'process':False})
 		self.return_scraps.write({'process':False})
@@ -282,27 +287,29 @@ class GlassRequisition(models.Model):
 	def transfer_picking(self,picking,ctx=None):
 		try:
 			picking.action_confirm()
-			picking.force_assign()
+			#picking.force_assign()
+			picking.action_assign()
 		except UserError as e:
-			raise UserError('No fue posible forzar la disponibilidad:\nPosible Causa:\n'+str(e))
-		if ctx:
-			action = picking.with_context({ctx:True}).do_new_transfer()
-		else:
-			action = picking.do_new_transfer()
-		context,bad_execution,motive = None,None,None
-		if type(action) == type({}):
-			if action['res_model'] == 'stock.immediate.transfer':
-				context = action['context']
-				sit = self.env['stock.immediate.transfer'].with_context(context).create({'pick_id':picking.id})	
-				try:
-					if ctx:
-						sit.with_context({ctx:True}).process()
-					else:
-						sit.process()
-				except UserError as e:
-					bad_execution,motive = picking.name,str(e)
-		if bad_execution:
-			raise UserError('No fue posible procesar los siguiente Picking: '+bad_execution+'\nPosible causa: '+motive)
+			raise UserError('No fue posible transferir el picking:\nPosible Causa:\n'+str(e))
+		if picking.state == 'assigned':
+			if ctx:
+				action = picking.with_context({ctx:True}).do_new_transfer()
+			else:
+				action = picking.do_new_transfer()
+			context,bad_execution,motive = None,None,None
+			if type(action) is dict:
+				if action['res_model'] == 'stock.immediate.transfer':
+					context = action['context']
+					sit = self.env['stock.immediate.transfer'].with_context(context).create({'pick_id':picking.id})	
+					try:
+						if ctx:
+							sit.with_context({ctx:True}).process()
+						else:
+							sit.process()
+					except UserError as e:
+						bad_execution,motive = picking.name,str(e)
+			if bad_execution:
+				raise UserError('No fue posible procesar los siguiente Picking: '+bad_execution+'\nPosible causa: '+motive)
 
 	# Metodo para crear los move_lines
 	@api.multi
@@ -338,9 +345,10 @@ class GlassRequisition(models.Model):
 		wizard = self.env['requisition.worker.material.wizard'].create({
 			'requisition_id':self.id,
 		})
+		year = str(datetime.now().date().year)
 		for item in allowed:
 			factor = float(item.uom_id.alto*item.uom_id.ancho)/1000000
-			pieces = int(self.get_available(item.id,location.id)/factor)
+			pieces = int(self.get_available(item.id,location.id,year)/factor)
 			if pieces <= 0:
 				continue
 			line = self.env['requisition.worker.wizard.line'].create({
@@ -370,6 +378,15 @@ class GlassRequisition(models.Model):
 			self.transfer_picking(raw_materials_picking)
 			self.picking_mp_ids |= raw_materials_picking
 			raw_materials.write({'process':True})
+			return {
+				'name':raw_materials_picking.name,
+				'res_id':raw_materials_picking.id,
+				'type': 'ir.actions.act_window',
+				'res_model': 'model_name',
+				'view_id': self.env.ref('stock.view_picking_form').id,
+				'view_mode': 'form',
+				'view_type': 'form',
+				}
 		else:
 			raise UserError('No hay lineas nuevas para procesar')
 		
@@ -440,6 +457,15 @@ class GlassRequisition(models.Model):
 			self.transfer_picking(scraps_picking,ctx='first_transaction')
 			self.picking_rt_ids |= scraps_picking
 			scraps.write({'process':True,})
+			return {
+				'name':scraps_picking.name,
+				'res_id':scraps_picking.id,
+				'type': 'ir.actions.act_window',
+				'res_model': 'model_name',
+				'view_id': self.env.ref('stock.view_picking_form').id,
+				'view_mode': 'form',
+				'view_type': 'form',
+				}
 		else:
 			raise UserError('No hay lineas nuevas para procesar')
 
@@ -510,29 +536,41 @@ class GlassRequisition(models.Model):
 			self.transfer_picking(scraps_return_picking,ctx='first_transaction')
 			self.picking_drt_ids |= scraps_return_picking
 			return_scraps.write({'process':True,})
+			return {
+				'name':scraps_return_picking.name,
+				'res_id':scraps_return_picking.id,
+				'type': 'ir.actions.act_window',
+				'res_model': 'model_name',
+				'view_id': self.env.ref('stock.view_picking_form').id,
+				'view_mode': 'form',
+				'view_type': 'form',
+				}
 		else:
 			raise UserError('No hay lineas nuevas para procesar')
 
-	@api.multi
-	def get_available(self,product,location):
-		try:
-			fiscal = self.env['main.parameter'].search([])[0].fiscalyear
-		except IndexError as e:
-			raise UserError(u'No se ha encontrado la configuración de Año Fiscal.')
-		self.env.cr.execute("""
+	def get_available(self,product,location,year):
+		# try:
+		# 	fiscal = self.env['main.parameter'].search([])[0].fiscalyear
+		# except IndexError as e:
+		# 	raise UserError(u'No se ha encontrado la configuración de Año Fiscal.')
+		query = """
 			select sum(stock_disponible) 
 			from vst_kardex_onlyfisico_total
-			where vst_kardex_onlyfisico_total.date >= '"""+str(fiscal)+"""-01-01'
-			and vst_kardex_onlyfisico_total.date <= '"""+str(fiscal)+"""-12-31'
-			and product_id = '"""+str(product)+"""'
-			and ubicacion = '"""+str(location)+"""'
+			where vst_kardex_onlyfisico_total.date >= '%s-01-01'
+			and vst_kardex_onlyfisico_total.date <= '%s-12-31'
+			and product_id = '%s'
+			and ubicacion = '%s'
 			group by product_id
-		""")
-		try:
-			res = list(self.env.cr.fetchall()[0])[0]
-		except IndexError as e:
-			res = 0
+		"""%(year,year,str(product),str(location))
+		self.env.cr.execute(query)
+		res = self.env.cr.fetchone()
+		res = res[0] if res else 0.0
 		return res
+		# try:
+		# 	res = list(self.env.cr.fetchall()[0])[0]
+		# except IndexError as e:
+		# 	res = 0
+		# return res
 
 class GlassRequisitionLineLot(models.Model):
 	_name = 'glass.requisition.line.lot'

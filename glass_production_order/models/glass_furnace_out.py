@@ -41,22 +41,19 @@ class GlassFurnaceOut(models.Model):
 		for item in breaks:
 			msg += '-> %s - %s : Cristal Roto\n'%(item.lot_line_id.search_code,item.lot_line_id.nro_cristal)
 		if msg != '':
-			raise exceptions('No es posible procesar los siguientes cristales\n'+msg+u'Haga click en el botón limpiar para remover los cristales rotos.') 
-		
-		for line in self.line_ids:	
-			self.env['glass.stage.record'].create({
-					'user_id':self.env.uid,
-					'date':(datetime.now()-timedelta(hours=5)).date(),
-					'time':(datetime.now()-timedelta(hours=5)).time(),
-					'stage':'templado',
-					'lot_line_id':line.lot_line_id.id,
-				})
-			line.lot_line_id.is_used=True
-			line.lot_line_id.templado=True
-			line.lot_line_id.order_line_id.state = 'ended'
-
-		self.write({'state':'done','user_out':self.env.uid,'date_out':(datetime.now()-timedelta(hours=5))})
+			raise exceptions('No es posible procesar los siguientes cristales\n'+msg+u'Haga click en el botón limpiar para remover los cristales rotos.')
+		for line in self.line_ids:
+			self._register_info(line.lot_line_id)
+		self.write({'state':'done','user_out':self.env.uid,'date_out':(datetime.now())})
 		return True
+	
+	def _register_info(self,line):
+		"""heredable"""
+		line.with_context(force_register=True).register_stage('templado')
+		#TODO Un cristal común se marca como producido al salir de templado???
+		line.with_context(force_register=True).register_stage('producido') 
+		line.is_used=True #??
+		line.order_line_id.state = 'ended'
 
 class GlassFurnaceIn(models.TransientModel):
 	_name = 'glass.furnace.in'
@@ -89,9 +86,9 @@ class GlassFurnaceIn(models.TransientModel):
 	@api.onchange('search_code')
 	def onchangecode(self):
 		if self.search_code and self._origin.id:
-			line=self.env['glass.lot.line'].search([('search_code','=',self.search_code)])
-			self.search_code = self.message_erro = ''
-			if len(line)>0:
+			line = self.env['glass.lot.line'].search([('search_code','=',self.search_code)],limit=1)
+			self.search_code,self.message_erro = '',''
+			if line:
 				if line.templado:
 					self.message_erro="El cristal ya fue registrado en la etapa Templado"
 					return
@@ -99,18 +96,17 @@ class GlassFurnaceIn(models.TransientModel):
 				# if not line.lavado:
 				# 	self.message_erro="El cristal no tiene la etapa LAVADO"
 				# 	return
-				existe_act = line[0]
 				this = self.browse(self._origin.id)
-				if existe_act.id in this.line_in_ids.mapped('lot_line_id').ids:
+				if line.id in this.line_in_ids.mapped('lot_line_id').ids:
 					self.message_erro="El cristal seleccionado ya fue registrado en este ingreso a horno"
 					return
 				new_line = self.env['glass.furnace.line.in'].create({
 					'main_id': this.id,
-					'lot_line_id':existe_act.id,
+					'lot_line_id':line.id,
 					'order_number':len(this.line_in_ids) + 1
 				})
 			else:
-				self.message_erro="Codigo de busqueda no encontrado!"
+				self.message_erro=u"Código de búsqueda no encontrado!"
 				return
 		else:
 			return
@@ -118,11 +114,10 @@ class GlassFurnaceIn(models.TransientModel):
 
 	@api.multi
 	def generate_furnace_lot(self):
-		try:
-			conf = self.env['glass.order.config'].search([])[0]
-		except IndexError as e:
+		conf = self.env['glass.order.config'].search([],limit=1)
+		if not conf:
 			raise UserError(u'No se encontraron los valores de configuración de produccion')
-		if len(self.line_in_ids) == 0:
+		if not self.line_in_ids:
 			raise exceptions.Warning('No ha ingresado Cristales.')
 		
 		breaks = self.line_in_ids.filtered(lambda x: x.lot_line_id.is_break)
@@ -137,9 +132,9 @@ class GlassFurnaceIn(models.TransientModel):
 		
 		area = sum(self.line_in_ids.mapped('area'))
 		new_furnace_lot = self.env['glass.furnace.out'].create({
-			'date_out':datetime.now()-timedelta(hours=5),
+			'date_out':datetime.now(),
 			'user_ingreso':self.env.uid,
-			'date_ingreso':datetime.now()-timedelta(hours=5),
+			'date_ingreso':datetime.now(),
 			'e_percent':(area*100)/conf.furnace_area,
 			'name':conf.seq_furnace.next_by_id(),
 			'state':'process',
@@ -162,14 +157,7 @@ class GlassFurnaceIn(models.TransientModel):
 				'partner_id':line.lot_line_id.order_prod_id.partner_id.id,
 				'obra':line.lot_line_id.order_prod_id.obra,
 			})
-			self.env['glass.stage.record'].create({
-				'user_id':self.env.uid,
-				'date':(datetime.now()-timedelta(hours=5)).date(),
-				'time':(datetime.now()-timedelta(hours=5)).time(),
-				'stage':'horno',
-				'lot_line_id':line.lot_line_id.id,
-				})
-			line.lot_line_id.horno=True
+			line.lot_line_id.with_context(force_register=True).register_stage('horno')
 		return self.get_element()
 
 class GlassFurnaceLineIn(models.TransientModel):

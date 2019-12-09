@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from odoo import fields, models,api, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError,ValidationError
 from datetime import datetime
 
 # class GlassTable(models.Model):
@@ -145,6 +145,7 @@ class GlassLotLine(models.Model):
 	comprado = fields.Boolean('Comprado',compute='_compute_checked_stages',store=True)
 	
 	is_break = fields.Boolean('Roto',compute='_compute_break_crystal',store=True)
+	active = fields.Boolean('Activo',default=True)
 	stage_ids = fields.One2many('glass.stage.record','lot_line_id',string='Etapas')
 	
 	descuadre = fields.Char("Descuadre",size=7)
@@ -164,29 +165,14 @@ class GlassLotLine(models.Model):
 	def _compute_checked_stages(self):
 		static_stg = ('optimizado','corte','pulido','lavado','entalle','horno','templado','producido','insulado','ingresado','entregado','arenado','comprado')
 		for line in self:
-			done_states = line.stage_ids.filtered('done')
+			done_stages = line.stage_ids.filtered('done')
 			for stg in static_stg:
-				line[stg] = done_states.filtered(lambda s: s.stage_id.name==stg)
-			# line.optimizado = bool(done_states.filtered(lambda s: s.stage_id.name=='optimizado'))
-			# line.corte      = bool(done_states.filtered(lambda s: s.stage_id.name=='corte'))
-			# line.pulido     = bool(done_states.filtered(lambda s: s.stage_id.name=='pulido'))
-			# line.lavado     = bool(done_states.filtered(lambda s: s.stage_id.name=='lavado'))
-			# line.entalle    = bool(done_states.filtered(lambda s: s.stage_id.name=='entalle'))
-			# line.horno      = bool(done_states.filtered(lambda s: s.stage_id.name=='horno'))
-			# line.templado   = bool(done_states.filtered(lambda s: s.stage_id.name=='templado'))
-			# line.insulado   = bool(done_states.filtered(lambda s: s.stage_id.name=='insulado'))
-			# line.ingresado  = bool(done_states.filtered(lambda s: s.stage_id.name=='ingresado'))
-			# line.entregado  = bool(done_states.filtered(lambda s: s.stage_id.name=='entregado'))
-			# line.arenado    = bool(done_states.filtered(lambda s: s.stage_id.name=='arenado'))
-			# line.comprado   = bool(done_states.filtered(lambda s: s.stage_id.name=='comprado'))
+				line[stg] = bool(done_stages.filtered(lambda s: s.stage_id.name==stg))
 
 	@api.depends('stage_ids.break_stage_id')
 	def _compute_break_crystal(self):
-		break_stage = self.env['glass.order.config'].search([],limit=1).break_stage_id
-		if not break_stage:
-			raise UserError(u'No se ha encontrado la etapa de rotura por defecto.\nVaya a parámetros de producción->Etapa de rotura. para configurarla.')
 		for line in self:
-			line.is_break=bool(line.stage_ids.filtered(lambda x: x.stage_id==break_stage and x.done))
+			line.is_break=bool(line.stage_ids.filtered(lambda x: x.stage_id.name=='rotura' and x.done))
 
 	@api.multi
 	def retire_lot_line(self):
@@ -267,13 +253,17 @@ class GlassLotLine(models.Model):
 			else:
 				existing = line.stage_ids.filtered(lambda x: x.stage_id==stage)
 				if existing.done:
-					bad_items.append(u'Etapa: %s Cristal: %s.'%(stage.name,line.search_code))
+					bad_items.append(u'Etapa: %s Cristal: %s. Motivo: etapa ya fue registrada.'%(stage.name,line.search_code))
 				elif existing:
 					existing.write({'done':True,'user_id':self.env.uid,'date':datetime.now()})
 				else:
 					# solo si se fuerza el registro
 					new_vals = self._prepare_record_stage_vals(stage,done=True)
-					if break_info:
+					if break_info and stage.name == 'rotura':
+						#break_stage = self.env['glass.order.config'].search([],limit=1).break_stage_id
+						# if not break_stage:
+						# 	raise UserError(u'No se ha encontrado la etapa de rotura por defecto.\nVaya a parámetros de producción->Etapa de rotura. para configurarla.')
+						line.active = False
 						new_vals.update(break_info)
 					line.stage_ids = [(0,0,new_vals)]
 		if any(bad_items):
@@ -282,7 +272,6 @@ class GlassLotLine(models.Model):
 				return error_msg
 			else:
 				raise UserError(error_msg)
-		#self._compute_checked_stages()
 		return True
 
 	def _prepare_record_stage_vals(self,stage,done=False):

@@ -80,6 +80,7 @@
                                     <field name="lavado" string="Lavado"/>
                                     <field name="horno" string="Horno"/>
                                     <field name="templado" string="Templa"/>
+                                    <field name="producido" string="Produ."/>
                                     <field name="insulado" string="Insula" />
                                     <field name="comprado" string="Compra"/>
                                     <field name="ingresado" string="Ingres"/>
@@ -164,6 +165,7 @@
                 <field name="entalle"/>
                 <field name="lavado"/>
                 <field name="templado"/>
+                <field name="producido"/>
                 <field name="insulado"/>
                 <field name="comprado"/>
                 <field name="entregado"/>
@@ -183,7 +185,7 @@
             <form string="Rotura de Cristal">
                 <group>
                     <field name="motive" string="Motivo" required="1"/>
-                    <field name="stage" string="Etapa" required="1"/>
+                    <field name="stage_id" string="Etapa" required="1" options="{'no_create':True}"/>
                     <field name="note" string="Observación"/>
                 </group>
                 <footer>

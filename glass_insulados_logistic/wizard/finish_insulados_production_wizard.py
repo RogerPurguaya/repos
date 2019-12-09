@@ -3,14 +3,14 @@ from odoo import api, fields, models
 from odoo.exceptions import UserError
 
 
-class MtfFinishInsuladosWizard(models.TransientModel):
-	_name = 'mtf.finish.insulados.wizard'
+class IlFinishInsuladosWizard(models.TransientModel):
+	_name = 'il.finish.insulados.wizard'
 
 	_description = u'Culminación de proceso para insulados'
 
 	glass_order_ids = fields.Many2many('glass.order',string=u'Órdenes de producción')
 
-	line_ids = fields.One2many('mtf.finish.insulados.wizard.line')
+	line_ids = fields.One2many('il.finish.insulados.wizard.line','wizard_id')
 
 	def get_ins_crystals(self):
 		"""Obtener solo órdenes con requirimiento completo"""
@@ -36,19 +36,34 @@ class MtfFinishInsuladosWizard(models.TransientModel):
 					'base_crystals':[(6,0,v2)]
 					}))
 		self.write({'line_ids':available_items})
+		return {"type": "ir.actions.do_nothing",}
 		
-class MtfFinishInsuladosWizardLine(models.TransientModel):
-	_name = 'mtf.finish.insulados.wizard.line'
+class IlFinishInsuladosWizardLine(models.TransientModel):
+	_name = 'il.finish.insulados.wizard.line'
 
-	wizard_id = fields.Many2one('mtf.finish.insulados.wizard',string=u'Wizard')
+	wizard_id = fields.Many2one('il.finish.insulados.wizard',string=u'Wizard')
 	calc_line_id = fields.Many2one('glass.sale.calculator.line',string=u'Línea de Cristal')
-	crystal_num = fields.Char('Nro de Crsital')
-	product_id = fields.Many2one(related='calc_line_id.product_id')
-	uom_id = fields.Many2one(related='product_id.uom_id')
-	quantity = fields.Integer(default=1)
+	crystal_num = fields.Char('Nro de Cristal')
+	product_id = fields.Many2one(related='calc_line_id.calculator_id.product_id',string="Producto")
+	uom_id = fields.Many2one(related='product_id.uom_id',string="Unidad")
+	quantity = fields.Integer(default=1,string='Cantidad')
 	base1 = fields.Integer(related='calc_line_id.base1')
 	base2 = fields.Integer(related='calc_line_id.base2')
 	height1 = fields.Integer(related='calc_line_id.height1')
 	height2 = fields.Integer(related='calc_line_id.height2')
-	base_crystals = fields.Many2many('glass.lot.line',u'Cristales producidos que lo conforman')
+	base_crystals = fields.Many2many('glass.lot.line',string=u'Cristales producidos que lo conforman')
+
+	def view_crystals(self):
+		return {
+			'name':'Cristales Componentes',
+			'type': 'ir.actions.act_window',
+			'res_model': 'glass.lot.line',
+			'view_id': self.env.ref('glass_production_order.glass_lot_line_view_tree').id,
+			'view_mode': 'tree',
+			'view_type': 'form',
+			'target': 'new',
+			'domain':[('id','in',self.base_crystals.ids)]
+			}
+		
+		
 

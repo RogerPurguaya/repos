@@ -8,7 +8,8 @@
              	<group col="5">
                             <div col="2" style='margin: 0px 10px 0px 10px' >
                                 <b>Etapa</b>
-                                <field name="stage" required="1" readonly="1"/>
+                                <field name="stage_id" required="1" readonly="1" options="{'no_create':True}"/>
+                                <field name="stage_name" invisible="1"/>
                             </div>
                             <div id="search_code" col="2" style='margin: 1px 10px 0px 10px'>
                                 <b>Producto</b><br/>
@@ -42,16 +43,16 @@
                             <div col="2" style='margin: 0px 10px 0px 10px'>
                                 <b></b><br/>
                                 <field name="messageline" style="color:Red;font-weight:bold;" readonly="1"/>
-                            </div>                            
+                            </div>
 
             	</group>
 
             	<notebook>
-            		<page name="image" string="Imagen" attrs="{'invisible':[('stage','not in',['corte','pulido'])]}">
+            		<page name="image" string="Imagen" attrs="{'invisible':[('stage_name','not in',['corte','pulido'])]}">
             			<field name="image_glass" widget="image" height="300" width="400"  readonly="1" options='{"size": [750, 700]}'/>
             		</page>
 
-            		<page name="pdf" string="Croquis" attrs="{'invisible':[('stage','not in',['entalle','lavado'])]}">
+            		<page name="pdf" string="Croquis" attrs="{'invisible':[('stage_name','not in',['entalle','lavado'])]}">
                         <div id="pdfDoc">
                             <iframe id="myIframe" src="/import_base_it/static/previsualizacion_op.pdf?t=666" width="100%" height="750px"></iframe>
                         </div>
@@ -90,11 +91,12 @@
         <field name="inherit_id" ref="view_glass_productioncontrol_wizard_form"/>
         <field name="groups_id" eval="[(6, 0, [ref('glass_production_order.group_glass_manager')])]" />                
         <field name="arch" type="xml">
-            <field name="stage"  position="attributes">
+            <field name="stage_id" position="attributes">
                 <attribute name="readonly">False</attribute>
             </field>
         </field>
     </record>
+
 	<record id="glass_production_control_wizard_action" model="ir.actions.act_window">
         <field name="name">Control de Producción</field>
         <field name="res_model">glass.productioncontrol.wizard</field>
@@ -102,6 +104,7 @@
         <field name="view_mode">form</field>
         <field name="target">new</field>
     </record> 
+
     <menuitem id="glass_order_control_menu" parent="glass_production_menu" name="Control" sequence="2"/>
 <!--     <menuitem id="glass_production_control_wizard_menu" parent="glass_order_control_menu" action="glass_production_control_wizard_action" sequence="1" groups="glass_production_order.group_glass_user"/> -->
 

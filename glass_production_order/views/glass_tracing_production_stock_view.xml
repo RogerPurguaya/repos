@@ -49,14 +49,11 @@
                                     <field name="product_name" string="Nombre_de_producto"/>
                                     <field name="location_apt" string="Ubicación APT"/>
                                     <field name="crystal_number" string="Nro Cristal"/>
-                                    <!-- <field name="base1" string="Base1"/>
-                                    <field name="base2" string="Base2"/>
-                                    <field name="altura1" string="Altura1"/>
-                                    <field name="altura2" string="Altura2"/> -->
                                     <field name="measures" string="Medidas"/> 
                                     <field name="arenado"  string="Aren."/>
                                     <field name="embalado" string="Emba."/>
                                     <field name="templado" string="Temp."/>
+                                    <field name="producido" string="Produ."/>
                                     <field name="ingresado" string="Ingr."/>
                                     <field name="entregado" string="Entr."/>
                                     <field name="is_break" string="Roto"/>

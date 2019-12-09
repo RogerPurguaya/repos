@@ -3,13 +3,12 @@
 from odoo import fields, models,api, _
 from odoo.exceptions import UserError
 from datetime import datetime,timedelta
-from functools import reduce
 
 class GlassInProductionWizard(models.TransientModel):
 	_name='glass.in.production.wizard'
 	
 	stock_type_id = fields.Many2one('stock.picking.type',u'Operación de almacén') 
-	date_in = fields.Date('Fecha ingreso',default=(datetime.now()-timedelta(hours=5)).date())
+	date_in = fields.Date('Fecha ingreso',default=lambda self: fields.Date.context_today(self))
 	start_date = fields.Date(default=datetime.now().date())
 	end_date = fields.Date(default=datetime.now().date())
 	order_ids = fields.One2many('glass.in.order','mainid','order_id')
@@ -39,16 +38,19 @@ class GlassInProductionWizard(models.TransientModel):
 		#start = datetime.strptime(self.start_date)
 		if not self.start_date or not self.end_date:
 			raise UserError('No ha colocado fechas de Inicio y/o fin.')
-		start = datetime.strptime(self.start_date,"%Y-%m-%d").date()-timedelta(hours=5)
-		end = datetime.strptime(self.end_date,"%Y-%m-%d").date()-timedelta(hours=5)
-		stages = self.env['glass.stage.record'].search([('date','<=',end),('date','>=',start),('stage','=','templado')])
-		lines = stages.mapped('lot_line_id').mapped('order_line_id').filtered(lambda x:x.state == 'ended')
+		#start = datetime.strptime(self.start_date,"%Y-%m-%d").date()-timedelta(hours=5)
+		#end = datetime.strptime(self.end_date,"%Y-%m-%d").date()-timedelta(hours=5)
+		#dt = fields.Datetime
+		#start = dt.from_string(self.start_date)
+		#end = dt.from_string(self.end_date)
+		domain = [('date','<=',self.end_date),('date','>=',self.start_date),('stage_id.name','=','producido'),('done','=',True),('lot_line_id.insulado','=',False)]
+		stages = self.env['glass.stage.record'].search(domain)
+		lines = stages.mapped('lot_line_id').mapped('order_line_id').filtered(lambda x:x.state=='ended')
 		for item in lines:
 			if item.id not in self.line_ids.ids:
 				item.location_tmp = self.location_id.id
 				self.write({'line_ids':[(4,item.id)]})
 		return {"type": "ir.actions.do_nothing",}
-
 
 	@api.multi
 	def refresh_selected_lines(self):
@@ -60,16 +62,20 @@ class GlassInProductionWizard(models.TransientModel):
 	@api.depends('line_ids')
 	@api.onchange('search_code')
 	def onchangecode(self):
-		config = self.env['glass.order.config'].search([])
-		if len(config)==0:
-			raise UserError(u'No se encontraron los valores de configuración de producción')		
-		config = self.env['glass.order.config'].search([])[0]
-		if self.search_code:			
+		# config = self.env['glass.order.config'].search([])
+		# if len(config)==0:
+		# 	raise UserError(u'No se encontraron los valores de configuración de producción')		
+		# config = self.env['glass.order.config'].search([])[0]
+		if self.search_code:
 			existe = self.env['glass.lot.line'].search([('search_code','=',self.search_code)])
 			if len(existe)==1:
 				line = existe.order_line_id
 				if line.state!='ended':
-					self.message_erro = 'La linea de orden no se encuentra en estado finalizado'
+					self.message_erro = u'El cristal %s no se encuentra en estado finalizado'%existe.search_code
+					self.search_code=""
+					return
+				if existe.insulado:
+					self.message_erro = u'Los cristales para insulado no pueden ingresarse por ésta vía'
 					self.search_code=""
 					return
 				this_obj=self.env['glass.in.production.wizard'].browse(self._origin.id) 
@@ -114,10 +120,10 @@ class GlassInProductionWizard(models.TransientModel):
 			aorder.append((0,0,vals))
 		return {'value':{'order_ids':aorder}}
 
-	@api.depends('line_ids')
+	#@api.depends('line_ids')
 	@api.onchange('order_ids')
 	def getlines(self):	
-		lines = self.order_ids.filtered(lambda x:x.selected).mapped('order_id').mapped('line_ids').filtered(lambda x:x.state=='ended')
+		lines = self.order_ids.filtered(lambda x:x.selected).mapped('order_id.line_ids').filtered(lambda x:x.state=='ended' and not x.lot_line_id.insulado)
 		if len(lines)>0:
 			this_obj = self.env['glass.in.production.wizard'].browse(self._origin.id)
 			for item in lines:
@@ -143,10 +149,11 @@ class GlassInProductionWizard(models.TransientModel):
 		except IndexError:
 			raise UserError(u'No se encontraron los valores de configuración de producción')
 		self.verify_constrains(self.date_in)
+		current_date = fields.Date.context_today(self)
 		picking = self.env['stock.picking'].create({
 			'picking_type_id': self.stock_type_id.id,
 			'partner_id': None,
-			'date': (datetime.now()-timedelta(hours=5)).date(),
+			'date': current_date,
 			'fecha_kardex': self.date_in,
 			#'origin': order.name,
 			'apt_in':True,
@@ -162,8 +169,8 @@ class GlassInProductionWizard(models.TransientModel):
 				'name': prod.name or '',
 				'product_id': prod.id,
 				'product_uom': prod.uom_id.id,
-				'date': (datetime.now()-timedelta(hours=5)).date(),
-				'date_expected': (datetime.now()-timedelta(hours=5)).date(),
+				'date': current_date,
+				'date_expected': current_date,
 				'location_id': self.stock_type_id.default_location_src_id.id,
 				'location_dest_id': self.stock_type_id.default_location_dest_id.id,
 				'picking_id': picking.id,
@@ -179,10 +186,12 @@ class GlassInProductionWizard(models.TransientModel):
 				'product_uom_qty': total_area,
 				'glass_order_line_ids': [(6,0,lines.ids)]
 			})
-		context = None
+		
+		picking.action_confirm()
+		picking.action_assign()
 		action = picking.do_new_transfer()
-		if type(action) == type({}):
-			if action['res_model'] == 'stock.immediate.transfer' or action['res_model'] == 'stock.backorder.confirmation':
+		if type(action) is dict:
+			if action['res_model'] == 'stock.immediate.transfer':
 				context = action['context']
 				sit = self.env['stock.immediate.transfer'].with_context(context).create({'pick_id':picking.id})	
 				sit.process()
@@ -198,17 +207,18 @@ class GlassInProductionWizard(models.TransientModel):
 				'state' : 'instock',
 				'location_tmp':False,
 				})
-			line.lot_line_id.ingresado = True
-			self.env['glass.stage.record'].create({
-				'user_id':self.env.uid,
-				'date':(datetime.now()-timedelta(hours=5)).date(),
-				'time':(datetime.now()-timedelta(hours=5)).time(),
-				'stage':'ingresado',
-				'lot_line_id':line.lot_line_id.id,
-			})
+			#line.lot_line_id.ingresado = True
+			line.lot_line_id.with_context(force_register=True).register_stage('ingresado')
+			# self.env['glass.stage.record'].create({
+			# 	'user_id':self.env.uid,
+			# 	'date':(datetime.now()-timedelta(hours=5)).date(),
+			# 	'time':(datetime.now()-timedelta(hours=5)).time(),
+			# 	'stage':'ingresado',
+			# 	'lot_line_id':line.lot_line_id.id,
+			# })
 		for order in self.line_ids.mapped('order_id'):
 			pendings = order.line_ids.filtered(lambda x: x.state in ('process','ended'))	
-			if not any(pendings):
+			if not pendings:
 				order.state='ended'
 		return {
 				'name':picking.name,
