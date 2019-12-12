@@ -60,7 +60,7 @@
         name="Ingreso de Insulados" 
         parent="glass_logistic_insulados_menu" 
         action="il_finish_insulados_wizard_action" 
-        sequence="1" 
+        sequence="2" 
         groups="glass_insulados_logistic.group_logistic_managment_insulados"/>
 
     </data>

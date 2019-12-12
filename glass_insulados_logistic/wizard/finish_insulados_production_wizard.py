@@ -9,6 +9,7 @@ class IlFinishInsuladosWizard(models.TransientModel):
 	_description = u'Culminación de proceso para insulados'
 
 	glass_order_ids = fields.Many2many('glass.order',string=u'Órdenes de producción')
+	picking_type_id = fields.Many2one('stock.picking.type',string='Tipo de Operación')
 
 	line_ids = fields.One2many('il.finish.insulados.wizard.line','wizard_id')
 
@@ -17,7 +18,7 @@ class IlFinishInsuladosWizard(models.TransientModel):
 		self.ensure_one()
 		glass_order_ids=self.glass_order_ids.filtered(lambda o: 'ended' in o.mtf_requirement_ids.mapped('state'))
 		if not glass_order_ids:
-			raise UserError(u"Ninguna de las ops seleccionadas ha finalizado su Orden de requisición de Ficha maestra")
+			raise UserError(u"Ninguna de las Op's seleccionadas ha finalizado su Orden de requisición de Ficha maestra")
 		#lines = self.glass_order_ids.mapped('line_ids.lot_line_id').filtered(lambda l: l.from_insulado and l.templado and not l.is_break)
 		self.line_ids.unlink()
 		## get complete process:

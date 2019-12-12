@@ -7,3 +7,4 @@
 #from . import glass_lot
 #from . import mtf_requisition
 #from . import stock_move
+from . import glass_order_config

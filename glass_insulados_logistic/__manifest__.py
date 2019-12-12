@@ -35,6 +35,8 @@
 		#'views/mtf_requisition.xml',
 		#'wizard/mtf_confirm_update_template.xml',
 		'wizard/finish_insulados_wizard.xml',
+		'wizard/traslate_insulados_wizard.xml',
+		'views/glass_order_config.xml',
 	],
 	'demo': [],
 	'installable': True

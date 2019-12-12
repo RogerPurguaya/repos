@@ -1,0 +1,21 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <data>
+        <!-- glass.order.config inherit form view -->
+        <record id="view_glass_order_config_form" model="ir.ui.view">
+            <field name="name">glass.order.config.inherit.view.form</field>
+            <field name="model">glass.order.config</field>
+            <field name="inherit_id" ref="glass_production_order.view_glass_order_config_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="Logística de Insulados">
+                        <group>
+                            <field name="pick_type_out_ins_id" required="1"/> 
+                            <field name="pick_type_in_ins_id" required="1"/> 
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
