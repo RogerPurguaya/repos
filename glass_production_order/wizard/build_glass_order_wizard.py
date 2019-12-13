@@ -19,9 +19,8 @@ class BuildGlassOrderWizard(models.TransientModel):
 	comercial_area=fields.Selection([('distribucion',u'Distribución'),('obra','Obra'),('proyecto','Proyecto')],u'Área Comercial',default="distribucion")
 	
 	def _get_config_default(self):
-		try:
-			config = self.env['glass.order.config'].search([],limit=1)[0]
-		except IndexError:
+		config = self.env['glass.order.config'].search([],limit=1)
+		if not config:
 			raise UserError(u'No se encontraron los valores de configuración de producción')
 		return config.id
 	
@@ -52,7 +51,7 @@ class BuildGlassOrderWizard(models.TransientModel):
 		config = self.config_id
 		gen_orders = self.sale_id.op_ids # sale op's
 		if gen_orders and not self.sale_id.before_invoice:
-			raise UserError(u"El pedido %s ya tiene ordenes de producción asignadas"%self.sale_id.name)
+			raise UserError(u"El pedido %s ya tiene órdenes de producción asignadas"%self.sale_id.name)
 		pendings = self.sale_id.op_returned_ids.filtered(lambda x: not x.corrected)
 		if pendings:
 			order_old = pendings[0] # Se subsana la primera de las órdenes devueltas 

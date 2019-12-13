@@ -28,7 +28,7 @@ class Get_glass_lines_for_move(models.TransientModel):
 		try:
 			config = self.env['glass.order.config'].search([])[0]
 		except IndexError as e:
-			raise exceptions.Warning('No se han encontrado los valores de configuracion necesarios para esta operacion (Nro. cristales por guia)')
+			raise UserError('No se han encontrado los valores de configuracion necesarios para esta operacion (Nro. cristales por guia)')
 		
 		lines = self.move_glass_wizard_line_ids.filtered(lambda x: x.check)
 		if len(lines) > 0:

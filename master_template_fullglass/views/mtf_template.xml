@@ -114,12 +114,15 @@
                                 <field name="ins_cr_1_stage_ids" widget="many2many_tags" string="Proc. Ins. Cristal 1"/>
                                 <field name="ins_cr_2_stage_ids" widget="many2many_tags" string="Proc. Ins. Cristal 2"/>
                             </group>
-                            <field name="stage_ids" attrs="{'invisible':[('applied_on','=','cr_ins')]}">
+                            <group>
+                                <field name="stage_ids" widget="many2many_tags" string="Procesos" attrs="{'invisible':[('applied_on','=','cr_ins')]}"/>
+                            </group>
+                            <!-- <field name="stage_ids" attrs="{'invisible':[('applied_on','=','cr_ins')]}">
                                 <tree>
                                     <field name="name"/>
                                     <field name="description"/>
                                 </tree>
-                            </field>
+                            </field> -->
                            <!--  <group>
                                 <button string="Actualizar" name="update_process_lines" type="object" class="btn-primary oe_edit_only"/>
                             </group>

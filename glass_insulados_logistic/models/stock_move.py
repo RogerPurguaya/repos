@@ -6,5 +6,8 @@ from odoo.exceptions import UserError
 class StockMove(models.Model):
 	_inherit = 'stock.move'
 
-	mtf_requeriment_line_id = fields.Many2one('mtf.requisition.line',string=u'Línea de requisición de ficha')
-
+	@api.multi
+	def action_cancel(self):
+		res = super(StockMove,self).action_cancel()
+		self.mapped('glass_order_line_ids').filtered(lambda l: l.lot_line_id.il_in_transfer).write({'il_in_transfer':False})
+		return res

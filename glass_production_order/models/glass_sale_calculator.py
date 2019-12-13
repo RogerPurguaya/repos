@@ -31,12 +31,13 @@ class GlassSaleCalculator(models.Model):
 			data = rec.line_ids.sorted(key=key_func)
 			for key,group in groupby(data,key_func):
 				crystal_nums=list(chain(*[x.get_crystal_numbers() for x in list(group)]))
-				if crystal_nums != list(set(crystal_nums)):
+				if len(crystal_nums) != len(set(crystal_nums)):
 					raise UserError(u'Existen cristales con números duplicados en su calculadora de cristales.')
 
-	@api.depends('order_id.state','line_ids')
+	@api.depends('order_id.state','line_ids.glass_order_id','order_id.before_invoice','qty_invoiced_rest')
 	def _compute_locked(self):
 		for rec in self:
+			print('compute ',rec)
 			op_ids = rec._get_glass_order_ids()
 			if rec.order_id.state=='draft' and not op_ids:
 				rec.is_locked = False

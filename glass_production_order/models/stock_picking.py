@@ -37,7 +37,7 @@ class StockPicking(models.Model):
 		if self.sale_picking and not pk and not delivery:
 			for move in self.move_lines:
 				res = move.get_results()
-				wizard = self.env['glass.lines.for.move.wizard'].browse(res['res_id'])		
+				wizard = self.env['glass.lines.for.move.wizard'].browse(res['res_id'])
 				if len(wizard.move_glass_wizard_line_ids.mapped('glass_line_id').filtered(lambda x: x.state != 'send2partner')) > 0:
 					raise UserError(u'No se han entregado todos los cristales del pedido de venta de este albarán!')
 		

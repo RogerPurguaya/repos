@@ -9,6 +9,7 @@
                 <form string="Traslado de Insulados">
                         <group>
                             <field name="picking_type_id" required="1"/>
+                            <field name="req_traslate_motive" required="1"/>
                         </group>
                         <group>
                             <field name="line_ids" nolabel="1">

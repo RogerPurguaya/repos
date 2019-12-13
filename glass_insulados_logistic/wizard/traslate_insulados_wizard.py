@@ -9,8 +9,8 @@ class IlTraslateInsuladosWizard(models.TransientModel):
 	_description = u'Traslado de crsitales para insulado a planta de prod. de insulados.'
 
 	picking_type_id = fields.Many2one('stock.picking.type',string='Tipo de Operación')
+	req_traslate_motive = fields.Many2one('einvoice.catalog.12',u'Motivo de traslado')
 	line_ids = fields.One2many('il.traslate.insulados.wizard.line','wizard_id')
-	
 	
 	def get_new_element(self):
 		wizard = self.create({})
@@ -24,33 +24,36 @@ class IlTraslateInsuladosWizard(models.TransientModel):
 			'target': 'new',
 		}
 
-
 	def process_transfer(self):
 		"""Obtener solo órdenes con requirimiento completo"""
-		return {"type": "ir.actions.do_nothing",} 
-		# self.ensure_one()
-		# glass_order_ids=self.glass_order_ids.filtered(lambda o: 'ended' in o.mtf_requirement_ids.mapped('state'))
-		# if not glass_order_ids:
-		# 	raise UserError(u"Ninguna de las Op's seleccionadas ha finalizado su Orden de requisición de Ficha maestra")
-		# #lines = self.glass_order_ids.mapped('line_ids.lot_line_id').filtered(lambda l: l.from_insulado and l.templado and not l.is_break)
-		# self.line_ids.unlink()
-		# ## get complete process:
-		# available_items = []
-		# # only with mtf_requirement_ids ended..
-		# for order in glass_order_ids:
-		# 	calcs = order.line_ids.mapped('calc_line_id.parent_id')
-		# 	ext_domain = [('insulado','=',False),('templado','=',True),('producido','=',False)]
-		# 	completes_dict = calcs._get_insulados_dict_crystals(ext_domain,only_completes=True)
-		# 	for k,v in completes_dict.items():
-		# 		calc = calcs.filtered(lambda l: l.id == k)
-		# 		for k2,v2 in v.items():
-		# 			available_items.append((0,0,{
-		# 			'calc_line_id':calc.id,
-		# 			'crystal_num':k2,
-		# 			'base_crystals':[(6,0,v2)]
-		# 			}))
-		# self.write({'line_ids':available_items})
-		# return {"type": "ir.actions.do_nothing",}
+		if not self.line_ids:
+			raise UserError('No hay cristales para insulado disponibles para enviar.')
+		lines = self.line_ids.mapped('lot_line_id')
+		products = lines.mapped('product_id')
+		pick_vals = self._prepare_pick_vals()
+		pick = self.env['stock.picking'].create(pick_vals)
+		move_vals = []
+		for product in products:
+			filt = lines.filtered(lambda l: l.product_id==product)
+			quantity = sum(filt.mapped('area'))
+			glass_ids = filt.mapped('order_line_id').ids
+			move_vals.append((0,0,self._prepare_move_vals(product,quantity,glass_ids)))
+		pick.write({'move_lines':move_vals})
+		pick.action_confirm()
+		pick.action_assign()
+
+		if pick.state == 'assigned':
+			action = pick.do_new_transfer()
+			if type(action) is dict and action['res_model'] == 'stock.immediate.transfer':
+				context = action['context']
+				sit = self.env['stock.immediate.transfer'].with_context(context).create({'pick_id':pick.id})	
+				sit.process()
+				
+		lines.write({'il_in_transfer':True})
+		action = self.env.ref('stock.action_picking_tree_all').read()[0]
+		action['views'] = [(self.env.ref('stock.view_picking_form').id, 'form')]
+		action['res_id'] = pick.id
+		return action
 
 	@api.model
 	def default_get(self,default_fields):
@@ -67,6 +70,7 @@ class IlTraslateInsuladosWizard(models.TransientModel):
 		and gll.templado = true 
 		and is_break = false
 		and active = true
+		and (gll.il_in_transfer = false or gll.il_in_transfer is null)
 		and (gll.insulado = false or gll.insulado is null)
 		"""
 		self._cr.execute(query)
@@ -76,14 +80,44 @@ class IlTraslateInsuladosWizard(models.TransientModel):
 			'line_ids':[(0,0,{'lot_line_id':r[0]}) for r in results],})
 		return res
 
-
 	def _prepare_pick_vals(self):
+		current_date = fields.Date.context_today(self)
+		pick_type = self.picking_type_id
 		return {
-
+			# TODO que partner le ponemos??
+			# al parecer siempres serán transf. internas, si son incoming, asignar un partner 
+			'partner_id':False,
+			'picking_type_id':pick_type.id,
+			'date':current_date,
+			'fecha_kardex':current_date,
+			'location_dest_id':pick_type.default_location_dest_id.id,
+			'location_id': pick_type.default_location_src_id.id,
+			'company_id': self.env.user.company_id.id,
+			'einvoice_12': self.req_traslate_motive.id,
 		}
 
-	def _prepare_move_vals(self):
-		pass
+	def _prepare_move_vals(self,product,qty,glass_ids):
+		current_date = fields.Date.context_today(self)
+		pick_type = self.picking_type_id
+		return {
+		'name': product.name,
+		'product_id': product.id,
+		'product_uom': product.uom_id.id,
+		'date':current_date,
+		'date_expected':current_date,
+		'picking_type_id': pick_type.id,
+		'location_id': pick_type.default_location_src_id.id,
+		'location_dest_id': pick_type.default_location_dest_id.id,
+		'partner_id': False,
+		'move_dest_id': False,
+		'state': 'draft',
+		'company_id':self.env.user.company_id.id,
+		'procurement_id': False,	
+		'route_ids':pick_type.warehouse_id and [(6,0,pick_type.warehouse_id.route_ids.ids)] or [],
+		'warehouse_id': pick_type.warehouse_id and pick_type.warehouse_id.id or False,
+		'product_uom_qty':qty,
+		'glass_order_line_ids':[(6,0,glass_ids or [])]
+		}
 		
 class IlTraslateInsuladosWizardLine(models.TransientModel):
 	_name = 'il.traslate.insulados.wizard.line'

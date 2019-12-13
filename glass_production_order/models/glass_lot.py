@@ -258,7 +258,7 @@ class GlassLotLine(models.Model):
 					existing.write({'done':True,'user_id':self.env.uid,'date':datetime.now()})
 				else:
 					# solo si se fuerza el registro
-					new_vals = self._prepare_record_stage_vals(stage,done=True)
+					new_vals = self._prepare_record_stage_vals(line,stage,done=True)
 					if break_info and stage.name == 'rotura':
 						#break_stage = self.env['glass.order.config'].search([],limit=1).break_stage_id
 						# if not break_stage:
@@ -274,11 +274,11 @@ class GlassLotLine(models.Model):
 				raise UserError(error_msg)
 		return True
 
-	def _prepare_record_stage_vals(self,stage,done=False):
+	def _prepare_record_stage_vals(self,line,stage,done=False):
 		return {
 			'user_id':self.env.uid,
 			'stage_id':stage.id,
-			'lot_line_id':self.id,
+			'lot_line_id':line.id,
 			'date':datetime.now(),
 			'done':done,
 		}

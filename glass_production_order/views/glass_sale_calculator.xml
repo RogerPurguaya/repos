@@ -7,7 +7,7 @@
         <field name="arch" type="xml">
             
             <field name="qty_invoiced" position="before">
-                <field name="is_locked"/>
+                <field name="is_locked" invisible="1"/>
             </field>
 
              <field name="line_ids" position="attributes">
@@ -88,7 +88,7 @@
         <field name="arch" type="xml">
 
             <field name="total_perimeter" position="before">
-                <field name="is_locked"/>
+                <field name="is_locked" invisible="1"/>
             </field>
 
              <field name="line_ids" position="attributes">

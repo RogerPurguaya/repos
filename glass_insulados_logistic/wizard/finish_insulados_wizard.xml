@@ -12,7 +12,9 @@
                     </header>
                     <sheet>
                         <group>
-                            <field name="glass_order_ids" widget="many2many_tags" required="1"/>
+                            <field name="glass_order_ids" widget="many2many_tags" required="1" domain="[('state','in',('confirmed','process'))]"/>
+                            <field name="picking_type_id" required="1"/>
+                            <field name="req_traslate_motive" required="1"/>
                         </group>
                         <notebook>
                             <page string="Detalle">
@@ -26,6 +28,7 @@
                                        <field name="base2"/>
                                        <field name="height1"/>
                                        <field name="height2"/>
+                                       <field name="area"/>
                                        <button string="Ver Cristales" name="view_crystals" type="object" class="btn-primary"/>
                                     </tree>
                                 </field>
@@ -33,6 +36,7 @@
                         </notebook>
                     </sheet>
                     <footer>
+                        <button string="Ingresar Cristales" name="process_transfer" type="object" class="btn-primary"/>
                         <button string="Cancelar" name="cancel" special="cancel" class="oe_link oe_inline"/>
                     </footer>
                 </form>
@@ -40,13 +44,22 @@
         </record>
 
         <!-- il.finish.insulados.wizard action window -->
-        <record id="il_finish_insulados_wizard_action" model="ir.actions.act_window">
+        <!-- <record id="il_finish_insulados_wizard_action" model="ir.actions.act_window">
             <field name="name">Ingreso de Insulados</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">il.finish.insulados.wizard</field>
             <field name="view_mode">form</field>
             <field name="view_type">form</field>
             <field name="target">new</field>
+        </record> -->
+
+        <!-- il.traslate.insulados.wizard action window -->
+        <record id="il_finish_insulados_wizard_action" model="ir.actions.server">
+            <field name="name">Ingreso de Insulados</field>
+            <field name="model_id" ref="model_il_finish_insulados_wizard"/>
+            <field name="code">
+                action = model.get_new_element()
+            </field>
         </record>
         
         <menuitem id="glass_logistic_insulados_menu" 

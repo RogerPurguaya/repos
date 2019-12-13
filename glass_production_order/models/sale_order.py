@@ -73,7 +73,7 @@ class SaleOrder(models.Model):
 	files_ids = fields.One2many('glass.pdf.file','sale_id','Croquis',copy=False)
 	reference_order = fields.Char(string='Referencia OP',copy=False,track_visibility='onchange')
 	count_files = fields.Integer('Files',compute='_get_count_files')
-	type_sale = fields.Selection([('distribution',u'Distribución'),('production',u'Producción')])
+	type_sale = fields.Selection([('distribution',u'Distribución'),('production',u'Producción'),('services','Servicios')])
 
 	@api.depends('files_ids')
 	def _get_count_files(self):
@@ -100,10 +100,7 @@ class SaleOrder(models.Model):
 		type_sale = values.get('type_sale',False)
 		if type_sale == 'production':
 			seq = self.env['ir.sequence'].search([('code','=','sale.order')])
-			try:
-				prod_seq = self.env['glass.order.config'].search([])[0].seq_sale_prod
-			except IndexError:
-				raise UserError(u'No se ha encontrado la configuración de Producción')
+			prod_seq = self.env['glass.order.config'].search([],limit=1).seq_sale_prod
 			if not prod_seq:
 				raise UserError(u'No ha configurado la secuencia para ventas de producción')
 			t.name = prod_seq.next_by_id()
@@ -221,6 +218,10 @@ class SaleOrder(models.Model):
 class SaleOrderLine(models.Model):
 	_inherit = 'sale.order.line'
 	
+	def get_glass_order_lines(self):
+		self.ensure_one()
+		return self.calculator_id._get_glass_order_ids().mapped('line_ids')
+
 	@api.multi
 	def unlink(self):
 		for line in self:

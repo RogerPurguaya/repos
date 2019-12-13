@@ -9,7 +9,7 @@
                 <form string="Requisición de Material">
                     <header>
                         <field name="state" widget="statusbar"/>
-                        <button string="Cancelar" name="cancel_requisition" type="object" class="btn-info" confirm="¿Está seguro de cancelar esta requisición?" states="draft,confirm"/>
+                        <button string="Cancelar" name="cancel_requisition" type="object" class="btn-info" confirm="¿Está seguro de cancelar esta requisición?" states="draft,confirmed"/>
                         <button string="Finalizar" name="process_requisition" type="object" class="btn-primary" states="confirmed"/>
                     </header>
                     <sheet>

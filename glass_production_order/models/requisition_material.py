@@ -1,5 +1,17 @@
+# -*- coding: utf-8 -*-
 from odoo import api, fields, models,exceptions
 from datetime import datetime
+
+class PurchaseRequisitionLine(models.Model):
+	_inherit = 'purchase.requisition.line'
+
+	description = fields.Char(u'Descripción')
+
+class PurchaseRequisition(models.Model):
+	_inherit = 'purchase.requisition'	
+	
+	sketch = fields.Binary('Croquis')
+	file_name = fields.Char("Archivo")
 
 class RequisitionMaterial(models.Model):
 	_name = 'requisition.material'
