@@ -89,7 +89,7 @@
         <field name="name">glass.productioncontrol.wizard.form.manager.view</field>
         <field name="model">glass.productioncontrol.wizard</field>
         <field name="inherit_id" ref="view_glass_productioncontrol_wizard_form"/>
-        <field name="groups_id" eval="[(6, 0, [ref('glass_production_order.group_glass_manager')])]" />                
+        <field name="groups_id" eval="[(6, 0, [ref('glass_production_order.group_glass_manager')])]" />
         <field name="arch" type="xml">
             <field name="stage_id" position="attributes">
                 <attribute name="readonly">False</attribute>
@@ -105,7 +105,6 @@
         <field name="target">new</field>
     </record> 
 
-    <menuitem id="glass_order_control_menu" parent="glass_production_menu" name="Control" sequence="2"/>
 <!--     <menuitem id="glass_production_control_wizard_menu" parent="glass_order_control_menu" action="glass_production_control_wizard_action" sequence="1" groups="glass_production_order.group_glass_user"/> -->
 
         <record id="produccion_control_actionop" model="ir.actions.server">
@@ -116,7 +115,7 @@
             </field>
         </record>
 
-<menuitem id="glass_production_control_wizard_menu_op" parent="glass_order_control_menu" action="produccion_control_actionop" sequence="1"/>
+<menuitem id="glass_production_control_wizard_menu_op" parent="glass_production_order.glass_order_control_menu" action="produccion_control_actionop" name="Control de Producción" sequence="1"/>
 
 
 

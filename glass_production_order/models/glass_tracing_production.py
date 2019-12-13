@@ -213,6 +213,7 @@ class GlassListWizard(models.Model):
 	templado=fields.Boolean(related='lot_line_id.templado')
 	horno = fields.Boolean(related='lot_line_id.horno')
 	insulado=fields.Boolean(related='lot_line_id.insulado') 
+	producido=fields.Boolean(related='lot_line_id.producido') 
 	comprado=fields.Boolean(related='lot_line_id.comprado')
 	ingresado=fields.Boolean(related='lot_line_id.ingresado') 
 	entregado=fields.Boolean(related='lot_line_id.entregado')

@@ -142,9 +142,6 @@
         <field name="view_type">form</field>
         <field name="view_mode">form</field>
     </record>
-     <menuitem id="glass_list_main_wizard_menu1" parent="glass_order_control_menu" action="glass_list_main_wizard_action1" sequence="9" groups="glass_production_order.group_glass_user,glass_production_order.group_glass_seguimiento,glass_production_order.group_glass_production_user"/>
-
-     <menuitem id="glass_list_main_wizard_menu2" parent="sales_team.menu_sale_report" action="glass_list_main_wizard_action1" sequence="11" groups="glass_production_order.group_glass_user,glass_production_order.group_glass_seguimiento,glass_production_order.group_glass_production_user"/>
 
     <record id="view_glass_list_wizard_form" model="ir.ui.view">
         <field name="name">glass.list.wizard.form.view</field>
@@ -214,6 +211,21 @@
             </tree>
         </field>
     </record>
+
+
+     <menuitem 
+        id="glass_list_main_wizard_menu1" 
+        parent="glass_production_order.glass_order_control_menu" 
+        action="glass_list_main_wizard_action1" 
+        sequence="9" 
+        groups="glass_production_order.group_glass_user,glass_production_order.group_glass_seguimiento,glass_production_order.group_glass_production_user"/>
+
+     <menuitem 
+     id="glass_list_main_wizard_menu2" 
+     parent="sales_team.menu_sale_report" 
+     action="glass_list_main_wizard_action1" 
+     sequence="11" 
+     groups="glass_production_order.group_glass_user,glass_production_order.group_glass_seguimiento,glass_production_order.group_glass_production_user"/>
 
     <act_window name="Reposición – Roto"
         res_model="glass.respos.wizard"

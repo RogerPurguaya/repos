@@ -159,12 +159,6 @@
         <field name="context">{'tree_view_ref': 'view_glass_order_tree','form_view_ref': 'view_glass_order_form'}</field>
     </record>
 
- 
-    <menuitem id="glass_production_menu" name="Producción"  groups="glass_production_order.group_glass_user,glass_production_order.group_glass_seguimiento,glass_production_order.group_glass_production_user" />
-    <menuitem id="glass_order_m_menu" parent="glass_production_menu" name="Órdenes de Producción" sequence="0" groups="glass_production_order.group_glass_user,glass_production_order.group_glass_production_user"/>
-    <menuitem id="glass_order_menu" parent="glass_order_m_menu" action="glass_order_action" sequence="0" groups="glass_production_order.group_glass_user,glass_production_order.group_glass_production_user"/>
-
-
     <record id="view_glass_order_line_tree" model="ir.ui.view">
         <field name="name">glass.order.line.tree.view</field>
         <field name="model">glass.order.line</field>
@@ -231,4 +225,10 @@
                 </search>
             </field>
         </record>
+
+    <menuitem id="glass_production_menu" name="Producción"  groups="glass_production_order.group_glass_user,glass_production_order.group_glass_seguimiento,glass_production_order.group_glass_production_user" />
+    <menuitem id="glass_order_m_menu" parent="glass_production_menu" name="Órdenes de Producción" sequence="0" groups="glass_production_order.group_glass_user,glass_production_order.group_glass_production_user"/>
+    <menuitem id="glass_order_menu" parent="glass_order_m_menu" action="glass_order_action" sequence="0" groups="glass_production_order.group_glass_user,glass_production_order.group_glass_production_user"/>
+    <menuitem id="glass_order_control_menu" parent="glass_production_menu" name="Control" sequence="2"/>
+    
 </odoo>
