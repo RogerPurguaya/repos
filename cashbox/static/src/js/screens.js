@@ -1,31 +1,5 @@
 odoo.define('cashbox.screens', function (require) {
 "use strict";
-// This file contains the Screens definitions. Screens are the
-// content of the right pane of the pos, containing the main functionalities. 
-//
-// Screens must be defined and named in chrome.js before use.
-//
-// Screens transitions are controlled by the Gui.
-//  gui.set_startup_screen() sets the screen displayed at startup
-//  gui.set_default_screen() sets the screen displayed for new orders
-//  gui.show_screen() shows a screen
-//  gui.back() goes to the previous screen
-//
-// Screen state is saved in the order. When a new order is selected,
-// a screen is displayed based on the state previously saved in the order.
-// this is also done in the Gui with:
-//  gui.show_saved_screen()
-//
-// All screens inherit from ScreenWidget. The only addition from the base widgets
-// are show() and hide() which shows and hides the screen but are also used to 
-// bind and unbind actions on widgets and devices. The gui guarantees
-// that only one screen is shown at the same time and that show() is called after all
-// hide()s
-//
-// Each Screens must be independant from each other, and should have no 
-// persistent state outside the models. Screen state variables are reset at
-// each screen display. A screen can be called with parameters, which are
-// to be used for the duration of the screen only. 
 
 var PosBaseWidget = require('cashbox.BaseWidget');
 var gui = require('cashbox.gui');
@@ -34,11 +8,23 @@ var core = require('web.core');
 var Model = require('web.DataModel');
 var utils = require('web.utils');
 var formats = require('web.formats');
+var framework = require('web.framework'); 
+//var PopupWidget = require('cashbox.popups'); 
+
+/* POR MOTIVOS DE PRISA DEFINIMOS DE NUEVO GUI, POPUPS Y TODO DE POS 
+VER LA FORMA DE REUTILIZAR LOS ASSETS DE POS PARA EVITAR CARGAR LOS MISMOS ASSETS DE NUEVO 
+*/
 
 var QWeb = core.qweb;
 var _t = core._t;
 
 var round_pr = utils.round_precision;
+var round_di = utils.round_decimals;
+
+
+models.load_fields('account.journal', ['pos_pay_method','cheques_journal_id']);
+var so_model = new Model('sale.order'),
+sol_model = new Model('sale.order.line');
 
 /*--------------------------------------*\
  |          THE SCREEN WIDGET           |
@@ -968,11 +954,12 @@ var ProductScreenWidget = ScreenWidget.extend({
     },
 
     click_product: function(product) {
-       if(product.to_weight && this.pos.config.iface_electronic_scale){
+    /* if(product.to_weight && this.pos.config.iface_electronic_scale){
            this.gui.show_screen('scale',{product: product});
        }else{
            this.pos.get_order().add_product(product);
-       }
+       } */
+       this.pos.get_order().add_product(product);
     },
 
     show: function(reset){
@@ -1623,6 +1610,11 @@ var PaymentScreenWidget = ScreenWidget.extend({
         // do not generate a keypress in Chrom{e,ium} (eg. delete,
         // backspace, ...) get passed to the keypress handler.
         this.keyboard_keydown_handler = function(event){
+            if($(".modal-dialog").not('.oe_hidden').length){
+                /* prevevir que cuando se un modal abierto bloquee el teclado */
+                return;
+            }
+
             if (event.keyCode === 8 || event.keyCode === 46) { // Backspace and Delete
                 event.preventDefault();
 
@@ -1642,6 +1634,10 @@ var PaymentScreenWidget = ScreenWidget.extend({
             var key = '';
 
             if (event.type === "keypress") {
+                if($(".modal-dialog").not('.oe_hidden').length){
+                    // lo mismo de arriba
+                    return;
+                }
                 if (event.keyCode === 13) { // Enter
                     self.validate_order();
                 } else if ( event.keyCode === 190 || // Dot
@@ -1888,6 +1884,20 @@ var PaymentScreenWidget = ScreenWidget.extend({
 
     },
     show: function(){
+        /* NEW */
+        let childs = self.$el.find('.top-content')[0].childNodes
+        let tc = self.pos.exchange_type || 0.0
+        let with_so = self.pos.get_order().sale_order_id
+
+        if (!with_so) { // previniendo, es lomá idóneo de ésta forma?? revisar...
+            this.click_back();
+            this.pos.gui.show_popup('alert',{
+                title:"Atención",
+                body:'No ha seleccionado un pedido de venta para proceder con su pago.',
+            });
+        }
+        /* END NEW :v */
+
         this.pos.get_order().clean_empty_paymentlines();
         this.reset_input();
         this.render_paymentlines();
@@ -2062,6 +2072,110 @@ var PaymentScreenWidget = ScreenWidget.extend({
     },
 });
 gui.define_screen({name:'payment', widget: PaymentScreenWidget});
+
+
+
+
+var getorders_button = ActionButtonWidget.extend({
+    template:'GetOrders',
+    button_click: function (){
+        let self = this
+        let order = this.pos.get_order();
+        //let domain = [['state','in',['sale','done']]];
+        //let domain = [['state','=','sale'],['']];
+        let title = 'Lista de Pedidos de venta';
+
+        // TODO: por ahora si tiene líneas de pedido, debe eliminarlas, ver una mejor alternativa
+        if (order.get_orderlines().length>0) {
+            self.show_alert('Debe eliminar sus líneas de pedido para poder Extraer un Pedido de venta');return;
+        }
+        let partner_id = false
+        if (order.attributes.client) {
+            //domain.push(['partner_id','=',order.attributes.client.id]);
+            partner_id = order.attributes.client.id
+            title = 'Órdenes para '+order.attributes.client.name;
+        }
+        else{
+            self.show_alert('Debe seleccionar un cliente para poder ver sus órdenes de venta');
+        }
+        /*if (order.get_sale_order_id()) {
+            domain.push(['id','!=',order.get_sale_order_id()])
+        } */
+        
+        //so_model.call('search_read',[domain,['name','date_order','partner_id','orderline']])
+        so_model.call('get_available_so_pos',[partner_id])
+        .then(function (orders) {
+            if (orders.length > 0) {
+                var order_list = _.map(orders,function (o) {
+                    let partner = self.get_format_name(o.partner_id[1],32)
+                    let date_order = o.date_order.substring(0,10)
+                    return {label:_.str.sprintf("%s - %s - %s",o.name,partner,date_order),item:o};
+                });
+                self.gui.show_popup('selection',{
+                    title:title,
+                    list:order_list,
+                    confirm: function (sale_order) {
+                        let fields = ['product_id','product_uom_qty','price_unit','discount']
+                        sol_model.call('search_read',[[['order_id','=',sale_order.id]],fields])
+                        .then(function (sale_orderlines) {
+                            if (sale_orderlines.length>0) {
+                                order.clear_sale_order();
+                                _.each(sale_orderlines, line => {
+                                    let product = self.pos.db.get_product_by_id(line.product_id[0]);
+                                    order.add_product(product,{
+                                        quantity:line.product_uom_qty,
+                                        price:line.price_unit,
+                                        discount:line.discount,
+                                    });
+                                });
+                                order.set_sale_order_id(sale_order.id);
+                            }
+                            else{
+                                self.show_alert('El pedido '+sale_order.name+' no tiene líneas de pedido de venta.');
+                            }
+                        });
+                    }
+                });
+            }
+            else{
+                self.show_alert('No se encontraron Órdenes de venta');
+            }
+        });
+    },
+    // methods:
+    show_alert: function (message) {
+        this.gui.show_popup('alert',{
+            title:"Atención",
+            body:message,
+        });
+    },
+    get_format_name: function (name,size) {
+        name = typeof name === 'string' ? name : String(name);
+        if (name.length > size) {
+            name = name.substring(0,size-3)+'...'
+        }
+        return name
+    }
+});
+
+
+var clearSaleOrder_button = ActionButtonWidget.extend({
+    template:'ClearSaleOrder',
+    button_click: function (){
+        let self = this
+        let order = this.pos.get_order();
+        order.clear_sale_order();
+    },
+});
+
+define_action_button({
+    'name':'getorders_btn',
+    'widget':getorders_button,
+});
+define_action_button({
+    'name':'clearSaleOrder_btn',
+    'widget':clearSaleOrder_button,
+});
 
 /* var set_fiscal_position_button = ActionButtonWidget.extend({
     template: 'SetFiscalPositionButton',

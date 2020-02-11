@@ -7,6 +7,8 @@ from odoo import fields, models, api
 class AccountJournal(models.Model):
 	_inherit = 'account.journal'
 
+	cashbox_pay_method = fields.Selection([('debit_card',u'Tarjeta de débito'),('credit_card',u'Tarjeta de crédito'),('deposit',u'Depósito'),('cheque','Cheque')],string='Forma de pago')
+
 	available_set_balance = fields.Boolean('Disponible para control de efectivo')
 	# journal_user = fields.Boolean('Active in Point of Sale',
 	#     help="Check this box if this journal define a payment method that can be used in a point of sale.")

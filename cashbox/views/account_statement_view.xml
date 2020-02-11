@@ -7,8 +7,9 @@
             <field name="arch" type="xml">
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Caja" attrs="{'invisible': [('type','not in',['bank','cash'])]}">
-                        <group col="4" colspan="4">
+                        <group>
                             <field name="available_set_balance"/>
+                            <field name="cashbox_pay_method"/>
                             <!-- <field name="journal_user"/>
                             <field name="amount_authorized_diff"/> -->
                         </group>

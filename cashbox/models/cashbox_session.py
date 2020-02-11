@@ -266,7 +266,7 @@ class CashboxSession(models.Model):
 
 		res = super(CashboxSession, self.with_context(ctx).sudo(uid)).create(values)
 		if not pos_config.cash_control:
-			res.action_pos_session_open()
+			res.action_cashbox_session_open()
 		return res
 
 	# @api.multi

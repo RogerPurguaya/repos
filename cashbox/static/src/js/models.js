@@ -231,7 +231,7 @@ exports.PosModel = Backbone.Model.extend({
         },
     },{
         model:  'cashbox.session',
-        fields: ['id', 'journal_ids','name','user_id','config_id','start_at','stop_at','sequence_number','login_number'],
+        fields: ['id', 'journal_ids','name','user_id','config_id','start_at','stop_at','sequence_number','login_number','exchange_type_ids'],
         domain: function(self){ return [['state','=','opened'],['user_id','=',session.uid]]; },
         loaded: function(self,pos_sessions){
             self.pos_session = pos_sessions[0];
@@ -335,7 +335,7 @@ exports.PosModel = Backbone.Model.extend({
             self.db.add_categories(categories);
         },
     }, */
-    {
+/*     {
         model:  'product.product',
         fields: ['display_name', 'list_price','price','pos_categ_id', 'taxes_id', 'barcode', 'default_code', 
                  'to_weight', 'uom_id', 'description_sale', 'description',
@@ -346,7 +346,21 @@ exports.PosModel = Backbone.Model.extend({
         loaded: function(self, products){
             self.db.add_products(products);
         },
+    }, */
+
+    {
+        model:  'product.product',
+        fields: ['display_name', 'list_price','price', 'taxes_id' ,'default_code', 
+                 , 'uom_id', 'description_sale', 'description',
+                 'product_tmpl_id','tracking'],
+        order:  ['sequence','default_code','name'],
+        domain: [['sale_ok','=',true]],
+        context: function(self){ return { pricelist: self.pricelist.id, display_default_code: false }; },
+        loaded: function(self, products){
+            self.db.add_products(products);
+        },
     },
+
 /*     {
         model:  'account.bank.statement',
         fields: ['account_id','currency_id','journal_id','state','name','user_id','pos_session_id'],
@@ -409,6 +423,48 @@ exports.PosModel = Backbone.Model.extend({
 
         },
     },  
+    {
+		model: 'cashbox.exchange.type',
+		fields: [
+			'id',
+			'type_purchase',
+			'type_sale',
+			'date',
+			'currency_id',
+		],
+		domain: function(self) {
+			//let date = self.pos_session.start_at.substring(0,10);
+			return [['id', 'in', self.pos_session.exchange_type_ids]];
+		},
+		loaded: function(self, exchanges) {
+			//let last_date = exchanges.map(item => item.date).sort().slice(-1)[0] || false
+            console.log('exchanges ',exchanges)
+            exchanges.forEach(item => {
+                self.db.add_exchange_type(item.currency_id[0],item.type_sale) // :)
+            });
+/*             if (last_date) {
+				self.exchange_type=exchanges.filter(item => item.date===last_date)[0].type_sale || 0.0
+			} */
+		}
+    },
+    {
+		model: 'cashbox.credit.card.config',
+		fields: [
+			'id',
+			'analytic_tag_id',
+			'card_type',
+		],
+		domain: function(self) {
+			return [['id', 'in', self.config.cashbox_card_ids]];
+		},
+		loaded: function(self, items) {
+			//self.credit_cards = items;
+			self.db.add_credit_cards(items);
+		}
+	},
+
+
+    
 /*     {
         model:  'account.fiscal.position',
         fields: [],
@@ -1642,12 +1698,33 @@ exports.Paymentline = Backbone.Model.extend({
     initialize: function(attributes, options) {
         this.pos = options.pos;
         this.order = options.order;
-        this.amount = 0;
+        //this.amount = 0;
+        this.amount = parseFloat(options.amount || 0);
         this.selected = false;
         if (options.json) {
             this.init_from_JSON(options.json);
             return;
         }
+        //nuestros campitos
+        /* INIT */
+        //this.bo_pay_method_id = options.bo_pay_method_id || false;
+        this.inv_refund_applied_id = options.inv_refund_applied_id || false;
+        // credit card payment
+        this.credit_card_info = options.credit_card_info || false;
+        this.card_number = options.card_number || false;
+        this.voucher_ref = options.voucher_ref || false;
+        // usd payment
+        this.exchange_type = options.exchange_type || 0.0;
+        this.payed_usd = options.payed_usd || false;
+        this.amount_currency = options.amount_currency || 0.0;
+        //deposit payment:
+        this.deposit_number = options.deposit_number ||false;
+        // cheque payment
+        this.finacial_entity = options.finacial_entity || false;
+        this.cheque_number = options.cheque_number || false;
+        this.is_deferred = options.is_deferred || false;
+        this.cheque_date_deferred = options.cheque_date_deferred || false;
+        /* END */
         this.cashregister = options.cashregister;
         this.name = this.cashregister.journal_id[1];
     },
@@ -1681,6 +1758,90 @@ exports.Paymentline = Backbone.Model.extend({
     get_type: function(){
         return this.cashregister.journal.type;
     },
+    /* Nuestros métodos */
+    set_bo_pay_method_id: function (value) {
+        this.bo_pay_method_id = value;
+    },
+    get_bo_pay_method_id: function () {
+        return this.bo_pay_method_id;
+    },
+    set_inv_refund_applied_id: function (value) {
+        this.inv_refund_applied_id = value;
+    },
+    get_inv_refund_applied_id: function () {
+        return this.inv_refund_applied_id;
+    },
+    /* Credit card payment get -sets fields */
+    set_credit_card_info: function (value) {
+        this.credit_card_info = value;
+    },
+    get_credit_card_info: function () {
+        return this.credit_card_info;
+    },
+    set_card_number: function (value) {
+        this.card_number = value;
+    },
+    get_card_number: function () {
+        return this.card_number;
+    },
+    set_voucher_ref: function (value) {
+        this.voucher_ref = value;
+    },
+    get_voucher_ref: function () {
+        return this.voucher_ref;
+    },
+    /* USD payment get -sets fields */
+    get_exchange_type: function () {
+        return this.exchange_type;
+    },
+    set_exchange_type: function (exchange) {
+        this.exchange_type = exchange;
+    },
+    get_payed_usd: function () {
+        return this.payed_usd;
+    },
+    set_payed_usd: function (value) {
+        this.payed_usd = value;
+    },
+    get_amount_currency: function () {
+        let factor=(this.get_exchange_type()&&this.get_payed_usd()) ? 1.0/this.get_exchange_type() : 1.0;
+        return parseFloat(round_di(this.get_amount() * factor,3).toFixed(3));
+    },
+    // set_amount_currency: function (value) {
+    // 	this.amount_currency = value
+    // },
+    /* Deposit payment get -sets fields */
+    get_deposit_number: function () {
+        return this.deposit_number;
+    },
+    set_deposit_number: function (value) {
+        this.deposit_number = value;
+    },
+    /* Cheque payment get -sets fields */
+    get_finacial_entity: function () {
+        return this.finacial_entity;
+    },
+    set_finacial_entity: function (value) {
+        this.finacial_entity = value;
+    },
+    get_cheque_number: function () {
+        return this.cheque_number;
+    },
+    set_cheque_number: function (value) {
+        this.cheque_number = value;
+    },
+    get_is_deferred: function () {
+        return this.is_deferred;
+    },
+    set_is_deferred: function (value) {
+        this.is_deferred = value;
+    },
+    get_cheque_date_deferred: function () {
+        return this.cheque_date_deferred;
+    },
+    set_cheque_date_deferred: function (value) {
+        this.cheque_date_deferred = value;
+    },
     // returns the associated cashregister
     //exports as JSON for server communication
     export_as_JSON: function(){
@@ -1689,7 +1850,25 @@ exports.Paymentline = Backbone.Model.extend({
             statement_id: this.cashregister.id,
             //account_id: this.cashregister.account_id[0],
             journal_id: this.cashregister.journal_id[0],
-            amount: this.get_amount()
+            amount: this.get_amount(),
+
+			inv_refund_applied_id: this.get_inv_refund_applied_id() || false,
+			bo_pay_method_id: this.get_bo_pay_method_id() || false,
+			//credit card
+			credit_card_info: this.get_credit_card_info() || false,
+			card_number: this.get_card_number() || false,
+			voucher_ref: this.get_voucher_ref() || false,
+			//deposit
+			deposit_number: this.get_deposit_number(),
+			// usd_payment
+			exchange_type: this.get_exchange_type(),
+			payed_usd: this.get_payed_usd() ? 1 : 0,
+			amount_currency: this.get_amount_currency() || 0.0,
+			//cheque
+			finacial_entity: this.get_finacial_entity(),
+			cheque_number: this.get_cheque_number(),
+			is_deferred: this.get_is_deferred() ? 1 : 0,
+			cheque_date_deferred: this.get_cheque_date_deferred(),
         };
     },
     //exports as JSON for receipt printing
@@ -1728,6 +1907,12 @@ exports.Order = Backbone.Model.extend({
         this.pos_session_id = this.pos.pos_session.id;
         this.finalized      = false; // if true, cannot be modified.
 
+        //nuevos campitos
+        this.sale_order_id = this.sale_order_id || false;
+        this.account_move = this.account_move || false;
+        this.invoice_id = this.invoice_id || false;
+        this.encoded_ticket = this.encoded_ticket || false; // ticket encoded to base64
+
         this.set({ client: null });
 
         if (options.json) {
@@ -1760,6 +1945,46 @@ exports.Order = Backbone.Model.extend({
             this.pos.db.save_unpaid_order(this);
         } 
     },
+
+    /* nuestras funciones */
+    get_sale_order_id: function () {
+        return this.sale_order_id
+    },
+    set_sale_order_id: function (sale_id) {
+        this.sale_order_id = sale_id
+    },
+    get_account_move: function () {
+        return this.account_move
+    },
+    set_account_move: function (move_id) {
+        this.account_move = move_id
+    },
+    get_invoice_id: function () {
+        return this.invoice_id
+    },
+    set_invoice_id: function (inv_id) {
+        this.invoice_id = inv_id
+    },
+    get_encoded_ticket: function () {
+        return this.encoded_ticket
+    },
+    set_encoded_ticket: function (encoded) {
+        this.encoded_ticket = encoded
+    },
+/*     add_product: function (product,options) {
+        if (this.get_sale_order_id()) {return};
+        _super_order.add_product.apply(this, arguments);
+    }, */
+    clear_sale_order: function () {
+        let lines = this.get_orderlines()
+        while (lines.length != 0) {
+            this.remove_orderline(lines[0]);
+        }
+        this.set_sale_order_id(false);
+        //this.pos.show_notification('notify','Yeah','lol xdxd');
+    },
+    /* Yeah */
+
     init_from_JSON: function(json) {
         var client;
         this.sequence_number = json.sequence_number;
@@ -1835,7 +2060,10 @@ exports.Order = Backbone.Model.extend({
             uid: this.uid,
             sequence_number: this.sequence_number,
             creation_date: this.validation_date || this.creation_date, // todo: rename creation_date in master
-            fiscal_position_id: this.fiscal_position ? this.fiscal_position.id : false
+            //fiscal_position_id: this.fiscal_position ? this.fiscal_position.id : false,
+			sale_order_id: this.get_sale_order_id(),
+			account_move: this.get_account_move(),
+			invoice_id: this.get_invoice_id(),
         };
     },
     export_for_printing: function(){

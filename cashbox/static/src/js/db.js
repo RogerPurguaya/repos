@@ -39,6 +39,9 @@ var PosDB = core.Class.extend({
         this.category_childs = {};
         this.category_parent    = {};
         this.category_search_string = {};
+        //Los nuestros
+        this.credit_card_by_id = {};
+        this.exchange_type_by_curr_id = {};
     },
 
     /* 
@@ -76,9 +79,9 @@ var PosDB = core.Class.extend({
     /* returns a list of all ancestors (parent, grand-parent, etc) categories ids
      * starting from the root category to the direct parent */
 
-/*     get_category_ancestors_ids: function(categ_id){
+    get_category_ancestors_ids: function(categ_id){
         return this.category_ancestors[categ_id] || [];
-    }, */
+    },
 
     /* returns the parent category's id of a category, or the root_category_id if no parent.
      * the root category is parent of itself. */
@@ -123,14 +126,14 @@ var PosDB = core.Class.extend({
         make_ancestors(this.root_category_id, []);
     },
     category_contains: function(categ_id, product_id) {
-        var product = this.product_by_id[product_id];
+         /* var product = this.product_by_id[product_id];
         if (product) {
             var cid = product.pos_categ_id[0];
             while (cid && cid !== categ_id){
                 cid = this.category_parent[cid];
             }
             return !!cid;
-        }
+        } */
         return false;
     },
     /* loads a record store from the database. returns default if nothing is found */
@@ -173,7 +176,7 @@ var PosDB = core.Class.extend({
         // Agrega los producto al inicio de todo, podemos usarlo para cargar los pedidos de venta
         //xD
 
-/*         var stored_categories = this.product_by_category_id;
+        var stored_categories = this.product_by_category_id;
 
         if(!products instanceof Array){
             products = [products];
@@ -181,7 +184,8 @@ var PosDB = core.Class.extend({
         for(var i = 0, len = products.length; i < len; i++){
             var product = products[i];
             var search_string = this._product_search_string(product);
-            var categ_id = product.pos_categ_id ? product.pos_categ_id[0] : this.root_category_id;
+            //var categ_id = product.pos_categ_id ? product.pos_categ_id[0] : this.root_category_id;
+            var categ_id = this.root_category_id;
             product.product_tmpl_id = product.product_tmpl_id[0];
             if(!stored_categories[categ_id]){
                 stored_categories[categ_id] = [];
@@ -208,10 +212,10 @@ var PosDB = core.Class.extend({
                 this.category_search_string[ancestor] += search_string; 
             }
             this.product_by_id[product.id] = product;
-            if(product.barcode){
+            /* if(product.barcode){
                 this.product_by_barcode[product.barcode] = product;
-            }
-        } */
+            } */
+        }
     },
     _partner_search_string: function(partner){
         var str =  partner.name;
@@ -391,7 +395,8 @@ var PosDB = core.Class.extend({
         if (!(category_ids instanceof Array)) {
             category_ids = [category_ids];
         }
-        var cat = this.get_product_by_id(product_id).pos_categ_id[0];
+        // no tenenos el modelo ni el campo pos_categ_id en product.product, le damos de baja a la mala
+        /* var cat = this.get_product_by_id(product_id).pos_categ_id[0];
         while (cat) {
             for (var i = 0; i < category_ids.length; i++) {
                 if (cat == category_ids[i]) {   // The == is important, ids may be strings
@@ -399,7 +404,7 @@ var PosDB = core.Class.extend({
                 }
             }
             cat = this.get_category_parent_id(cat);
-        }
+        } */
         return false;
     },
 
@@ -490,7 +495,26 @@ var PosDB = core.Class.extend({
     },
     get_cashier: function() {
         return this.load('cashier');
-    }
+    },
+
+    add_credit_cards: function(credit_cards) {
+        for (var i = 0, len = credit_cards.length; i < len; i++) {
+            var item = credit_cards[i];
+            this.credit_card_by_id[item.id] = item;
+        }
+    },
+    get_credit_card_by_id: function(credit_card_id) {
+        return this.credit_card_by_id[credit_card_id];
+    },
+    add_exchange_type: function(curr_id,exchange_type) {
+        //this.exchange_type_by_id[exchange_type.id] = exchange_type;
+        this.exchange_type_by_curr_id[curr_id] = exchange_type;
+    },
+    get_exchange_type_by_curr_id: function(curr_id) {
+        return this.exchange_type_by_id[curr_id];
+    },
+
+    
 });
 
 return PosDB;

@@ -10,7 +10,9 @@ from . import cashbox_config
 from . import cashbox_session
 from . import cashbox_currency_rate
 from . import cashbox_summary_cash
+from . import cashbox_credit_card
 #import product
 from . import res_config
 from . import res_partner
+from . import sale_order
 #from . import res_users

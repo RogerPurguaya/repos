@@ -346,7 +346,7 @@ var Gui = core.Class.extend({
         this.chrome.loading_message(_t('Closing ...'));
 
         this.pos.push_order().then(function(){
-            var url = "/web#action=cashbox.action_client_pos_menu";
+            var url = "/web#action=cashbox.action_client_cashbox_menu";
             window.location = session.debug ? $.param.querystring(url, {debug: session.debug}) : url;
         });
     },

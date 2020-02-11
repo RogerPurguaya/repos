@@ -130,6 +130,19 @@ class CashboxConfig(models.Model):
 	#default_fiscal_position_id = fields.Many2one('account.fiscal.position', string='Default Fiscal Position')
 	# default_cashbox_lines_ids = fields.One2many('account.cashbox.line', 'default_pos_id', string='Default Balance')
 
+
+	# Nuestros campitos
+	cashbox_card_ids = fields.One2many('cashbox.credit.card.config','config_id',string=u'Tarjetas electrónicas')
+	invoice_series_id = fields.Many2one('it.invoice.serie',string='Serie para facturas')
+	boleta_series_id = fields.Many2one('it.invoice.serie',string='Serie para Boletas')
+	cheques_journal_id = fields.Many2one('account.journal',string='Diario para cheques') 
+	# métodos de pago para líneas de extracto bancario (BackOffice)
+	credit_card_pay_method = fields.Many2one('einvoice.means.payment',string=u'Medio de Pago Tarj. crédito')
+	debit_card_pay_method = fields.Many2one('einvoice.means.payment',string=u'Medio de Pago Tarj. débito')
+	cheque_pay_method = fields.Many2one('einvoice.means.payment',string=u'Medio de Pago Cheques')
+	deposit_pay_method = fields.Many2one('einvoice.means.payment',string=u'Medio de Pago Depósitos')
+
+
 	@api.depends('journal_id.currency_id', 'journal_id.company_id.currency_id')
 	def _compute_currency(self):
 		for cashbox_config in self:

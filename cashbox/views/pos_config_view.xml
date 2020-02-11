@@ -29,6 +29,7 @@
                             <field name="code" />
                             <field name="name" />
                             <field name="type" />
+                            <field name="cashbox_pay_method" />
                         </tree>
                     </field>
                     <group name="features" string="Características" >
@@ -64,6 +65,28 @@
                             </tree>
                         </field> -->
                     </group>
+                    <group string="Tarjetas de pago Electrónico">
+                        <field name="cashbox_card_ids" nolabel="1">
+                            <tree editable="bottom">
+                                <field name="analytic_tag_id" required="1"/> 
+                                <field name="card_type" required="1"/> 
+                            </tree>
+                        </field>
+                    </group>
+
+                    <group string="Series para documentos">
+                        <field name="invoice_series_id" required="1"/> 
+                        <field name="boleta_series_id" required="1"/> 
+                        <field name="cheques_journal_id" required="1"/>
+                    </group>
+
+                    <group string="Medios de pago">
+                        <field name="credit_card_pay_method" required="1"/> 
+                        <field name="debit_card_pay_method" required="1"/> 
+                        <field name="cheque_pay_method" required="1"/> 
+                        <field name="deposit_pay_method" required="1"/> 
+                    </group>
+
                     <group name="receipt" string="Receipt" >
                         <field name="receipt_header" string="Header" placeholder="A custom receipt header message"/>
                         <field name="receipt_footer" string="Footer" placeholder="A custom receipt footer message"/>

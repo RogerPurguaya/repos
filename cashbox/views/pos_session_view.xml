@@ -6,6 +6,7 @@
         src_model="cashbox.session"
         res_model="cashbox.movement.record"
         view_mode="form"
+        target="new" 
         context="{'default_type_movement':'in', 'default_user_id':uid, 'default_session_id':active_id}"/>
 
     <act_window
@@ -14,8 +15,8 @@
         src_model="cashbox.session"
         res_model="cashbox.movement.record"
         view_mode="form"
+        target="new" 
         context="{'default_type_movement':'out', 'default_user_id':uid, 'default_session_id':active_id}"/>
-
 
     <record id="view_cashbox_session_form" model="ir.ui.view">
         <field name="name">cashbox.session.form.view</field>

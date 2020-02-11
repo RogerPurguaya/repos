@@ -1,5 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_wizard +all,il_finish_insulados_wizard,model_il_finish_insulados_wizard,group_logistic_managment_insulados,1,1,1,1
-access_wizard_line +all,il_finish_insulados_wizard_line,model_il_finish_insulados_wizard_line,group_logistic_managment_insulados,1,1,1,1
-access_wizard +all,il_finish_insulados_wizard,model_il_finish_insulados_wizard,,1,0,0,0
-access_wizard_line +all,il_finish_insulados_wizard_line,model_il_finish_insulados_wizard_line,,1,0,0,0

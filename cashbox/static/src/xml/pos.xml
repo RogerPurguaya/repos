@@ -1204,7 +1204,7 @@
         <span class='product' t-att-data-product-id="product.id">
             <div class="product-img">
                 <img t-att-src='image_url' /> 
-                <t t-if="!product.to_weight">
+                <!-- <t t-if="!product.to_weight">
                     <span class="price-tag">
                         <t t-esc="widget.format_currency(product.price,'Product Price')"/>
                     </span>
@@ -1213,7 +1213,7 @@
                     <span class="price-tag">
                         <t t-esc="widget.format_currency(product.price,'Product Price')+'/'+widget.pos.units_by_id[product.uom_id[0]].name"/>
                     </span>
-                </t>
+                </t> -->
             </div>
             <div class="product-name">
                 <t t-esc="product.display_name"/>
@@ -1499,6 +1499,22 @@
             </t>
         </div>
     </t>
+
+
+    <!-- Nuestros templates  -->
+    <t t-name="GetOrders">
+        <div class="control-button">
+            <i class="fa fa-shopping-cart"/>Ver Órdenes
+        </div>
+    </t>
+
+    <t t-name="ClearSaleOrder">
+        <div class="control-button">
+            <i class="fa fa-trash-o"/>Remover Órden
+        </div>
+    </t>
+
+    <!-- END -->
 
     <!-- Onscreen Keyboard : 
          http://net.tutsplus.com/tutorials/javascript-ajax/creating-a-keyboard-with-css-and-jquery/ -->

@@ -9,7 +9,7 @@
 	'description': """
 		Caja IT
 	""",
-	'depends': ['stock_account'],
+	'depends': ['stock_account','sale'],
 	'data': [
 		'security/point_of_sale_security.xml',
 		'security/ir.model.access.csv',

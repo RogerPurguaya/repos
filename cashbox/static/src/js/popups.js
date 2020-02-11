@@ -9,6 +9,9 @@ odoo.define('cashbox.popups', function (require) {
 var PosBaseWidget = require('cashbox.BaseWidget');
 var gui = require('cashbox.gui');
 var _t  = require('web.core')._t;
+var utils = require('web.utils');
+var round_di = utils.round_decimals;
+var models = require('cashbox.models');
 
 
 var PopupWidget = PosBaseWidget.extend({
@@ -319,6 +322,197 @@ var OrderImportPopupWidget = PopupWidget.extend({
     template: 'OrderImportPopupWidget',
 });
 gui.define_popup({name:'orderimport', widget: OrderImportPopupWidget});
+
+/* Popup de pagos */
+/* Credit cards popup */
+var PaymentExtraInfo = PopupWidget.extend({
+    template: 'PaymentExtraInfo',
+    show: function(options) {
+        var self = this;
+        options = options || {};
+        this._super(options);
+        this.bo_pay_method_id = options.bo_pay_method_id || false;
+        this.cashregister = options.cashregister;
+        this.payment_screen = options.payment_screen;
+        this.mode = options.mode || false;
+        this.card_items = options.card_items || [];
+        this.exchange_type = options.exchange_type || false;
+        //this.deposit_number = this.deposit_number || false;
+        this.due = options.due || 0.0;
+        let due_usd = (options.due && this.exchange_type && this.exchange_type>0.0) ? this.round_amount(options.due/this.exchange_type) : 0.0;
+        due_usd = parseFloat(due_usd.toFixed(3))
+        //this.amount = parseFloat(this.round_amount(options.due || 0.0,3).toFixed(3));
+        this.due_usd = due_usd;
+        //this.amount_usd = due_usd;
+        //this.error_msg = false
+        this.renderElement();
+        let input_focus;
+        if (this.mode==='debit' || this.mode==='credit') {
+            input_focus = this.$el.find('[name=number]');
+        }
+        else if (this.mode==='usd_payment') {
+            input_focus = this.$el.find('[name=amount_usd]');
+        }
+        else if (this.mode==='deposit'){
+            input_focus = this.$el.find('[name=deposit_number]');
+        }
+        else if (this.mode==='cheque_payment'){
+            input_focus = this.$el.find('[name=cheque_number]');
+        }
+        if(input_focus){
+            input_focus[0].focus();
+        }
+    },
+    events: {
+        'click .button_confirm': 'confirm',
+        'click .button_close': 'clickClose',
+        //'keyup': 'changeAmountUSD',
+    },
+    // para lueguito xdxd
+    // changeAmountUSD: function() {
+    // 	var self = this;
+    // 	if (this.mode==='usd_payment') {
+    // 		let input_usd = this.$el.find('[name=amount_usd]')
+    // 		let amount_usd = input_usd.val();
+    // 		if (amount_usd === undefined || amount_usd <= 0.0) {
+    // 			this.$el.find('.button_confirm').addClass('oe_hidden');
+    // 		}
+    // 		else{
+    // 			this.$el.find('.button_confirm').removeClass('oe_hidden');
+    // 		}
+    // 	}
+    // },
+    confirm: function () {
+        var self = this;
+        let error_msg = false
+        let new_pay_line = false
+        if (this.mode==='debit' || this.mode==='credit') {
+            let amount = this.$el.find('[name=amount]').val(),
+                card_number = this.$el.find('[name=number]').val(),
+                voucher_ref = this.$el.find('[name=voucher_ref]').val(),
+                tag = this.$('.creditcard-detail .credit_card_sel')[0].value;
+            
+            if (amount === undefined || amount <= 0.0) {
+                error_msg = 'Importe ingresado no válido.';
+            }
+            if (!tag) {
+                error_msg = 'No ha seleccionado una tarjeta.';
+            }
+            if (!card_number) {
+                error_msg = 'Debe colocar el número de tarjeta con la que va a registrar el pago.';
+            }
+            if (!voucher_ref) {
+                error_msg = 'No ha ingresado la referencia del Voucher.';
+            }
+            if (error_msg) {
+                return this.launch_error(error_msg)
+            }
+            amount = this.round_amount(amount);
+            new_pay_line = this.add_paymentline(amount);
+            new_pay_line.set_credit_card_info(tag);
+            new_pay_line.set_card_number(card_number);
+            new_pay_line.set_voucher_ref(voucher_ref)
+        }
+        else if (this.mode==='usd_payment'){
+            let amount_usd = this.$el.find('[name=amount_usd]').val();
+            
+            if (amount_usd === undefined || amount_usd <= 0.0) {
+                error_msg = 'Importe ingresado no válido.';
+                return this.launch_error(error_msg)
+            }
+            //this.amount = round_di(parseFloat(value) || 0, this.pos.currency.decimals); 
+            let amount = this.round_amount(amount_usd * this.exchange_type);
+            new_pay_line = this.add_paymentline(amount);
+            new_pay_line.set_exchange_type(this.exchange_type);
+            new_pay_line.set_payed_usd(true)
+        }
+        else if (this.mode==='deposit'){
+            let deposit_amount = this.$el.find('[name=deposit_amount]').val();
+            let deposit_number = this.$el.find('[name=deposit_number]').val();
+            if (!deposit_number) {
+                error_msg = 'Ingrese el número de depósito.';
+            }
+            if (deposit_amount === undefined || deposit_amount <= 0.0) {
+                error_msg = 'Importe ingresado no válido.';
+            }
+            if (error_msg) {
+                return this.launch_error(error_msg)
+            }
+            deposit_amount = this.round_amount(deposit_amount);
+            new_pay_line = this.add_paymentline(deposit_amount);
+            new_pay_line.set_deposit_number(deposit_number)
+        }
+        else if (this.mode === 'cheque_payment'){
+            let finacial_entity = this.$el.find('[name=finacial_entity]').val(),
+                cheque_number = this.$el.find('[name=cheque_number]').val(),
+                is_deferred = this.$el.find('[name=is_deferred]').is(':checked'),
+                cheque_date_deferred = this.$el.find('[name=cheque_date_deferred]').val(),
+                cheque_amount = this.$el.find('[name=cheque_amount]').val();
+            
+            cheque_amount = parseFloat(cheque_amount)
+            if (is_deferred && !cheque_date_deferred) {
+                error_msg = 'Coloque la fecha de diferido.';
+            }
+            if (finacial_entity.length===0 || cheque_number.length===0) {
+                error_msg = 'No ha asignado todos los campos.';
+            }
+            if (cheque_amount <= 0.0 || isNaN(cheque_amount)) {
+                error_msg = 'El importe es inválido.';
+            }
+            if (is_deferred) {
+                let def_date = new Date(cheque_date_deferred);
+                let today = new Date();
+                today = new Date(`${today.getFullYear()}-${today.getMonth()+1}-${today.getDate()}`)
+                if (today-def_date <= 0) {
+                    error_msg = 'La fecha de diferido debe ser anterior a la fecha actual.';
+                }
+            }
+            if (error_msg) {
+                return this.launch_error(error_msg)
+            }
+            cheque_amount = this.round_amount(cheque_amount);
+            new_pay_line = this.add_paymentline(cheque_amount);
+            new_pay_line.set_finacial_entity(finacial_entity)
+            new_pay_line.set_cheque_number(cheque_number)
+            new_pay_line.set_is_deferred(is_deferred)
+            new_pay_line.set_cheque_date_deferred(cheque_date_deferred || false)
+        }
+        this.payment_screen.reset_input();
+        this.payment_screen.render_paymentlines();
+        this.clickClose()
+    },
+    add_paymentline: function (amount) {
+        amount = typeof amount==='number' ? amount : parseFloat(amount)
+        let order = this.pos.get_order();
+        let cashregister = this.cashregister;
+        order.assert_editable();
+        var newPaymentline = new models.Paymentline({},{order: order, cashregister:cashregister, pos: this.pos, amount:amount,bo_pay_method_id:this.bo_pay_method_id});
+        if(cashregister.journal.type !== 'cash' || this.pos.config.iface_precompute_cash){
+            newPaymentline.set_amount(order.get_due());
+            //newPaymentline.set_amount_currency(this.get_amount_currency(order.get_due(),curr_factor));
+        }
+        order.paymentlines.add(newPaymentline);
+        order.select_paymentline(newPaymentline);
+        return newPaymentline
+    },
+    clickClose: function () {
+        this.pos.gui.close_popup();
+    },
+    round_amount: function (amount,decimals) {
+        return round_di(parseFloat(amount) || 0, decimals ? decimals : this.pos.currency.decimals);
+    },
+    // get_amount_currency: function (amount,factor) {
+    // 	console.log(amount,factor)
+    // 	return parseFloat(this.round_amount(amount * (factor || 1.0)).toFixed(3))
+    // },
+    launch_error: function (error_msg) {
+        this.$el.find('.label_error').addClass('oe_hidden')
+        this.$el.find('.errors-container').append(`<span class='label label_error'>${error_msg}</span>`);return;
+    }
+});
+
+gui.define_popup({ name: 'payment_extra_info', widget: PaymentExtraInfo });
+
 
 return PopupWidget;
 });
