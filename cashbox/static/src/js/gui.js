@@ -1,4 +1,4 @@
-odoo.define('point_of_sale.gui', function (require) {
+odoo.define('cashbox.gui', function (require) {
 "use strict";
 // this file contains the Gui, which is the pos 'controller'. 
 // It contains high level methods to manipulate the interface
@@ -346,7 +346,7 @@ var Gui = core.Class.extend({
         this.chrome.loading_message(_t('Closing ...'));
 
         this.pos.push_order().then(function(){
-            var url = "/web#action=point_of_sale.action_client_pos_menu";
+            var url = "/web#action=cashbox.action_client_pos_menu";
             window.location = session.debug ? $.param.querystring(url, {debug: session.debug}) : url;
         });
     },
@@ -356,9 +356,9 @@ var Gui = core.Class.extend({
     play_sound: function(sound) {
         var src = '';
         if (sound === 'error') {
-            src = "/point_of_sale/static/src/sounds/error.wav";
+            src = "/cashbox/static/src/sounds/error.wav";
         } else if (sound === 'bell') {
-            src = "/point_of_sale/static/src/sounds/bell.wav";
+            src = "/cashbox/static/src/sounds/bell.wav";
         } else {
             console.error('Unknown sound: ',sound);
             return;

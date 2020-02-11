@@ -1,4 +1,4 @@
-odoo.define('point_of_sale.screens', function (require) {
+odoo.define('cashbox.screens', function (require) {
 "use strict";
 // This file contains the Screens definitions. Screens are the
 // content of the right pane of the pos, containing the main functionalities. 
@@ -27,9 +27,9 @@ odoo.define('point_of_sale.screens', function (require) {
 // each screen display. A screen can be called with parameters, which are
 // to be used for the duration of the screen only. 
 
-var PosBaseWidget = require('point_of_sale.BaseWidget');
-var gui = require('point_of_sale.gui');
-var models = require('point_of_sale.models');
+var PosBaseWidget = require('cashbox.BaseWidget');
+var gui = require('cashbox.gui');
+var models = require('cashbox.models');
 var core = require('web.core');
 var Model = require('web.DataModel');
 var utils = require('web.utils');
@@ -616,7 +616,7 @@ var OrderWidget = PosBaseWidget.extend({
 //  - perform_search() to search for products
 //  - clear_search()   does what it says.
 
-var ProductCategoriesWidget = PosBaseWidget.extend({
+/* var ProductCategoriesWidget = PosBaseWidget.extend({
     template: 'ProductCategoriesWidget',
     init: function(parent, options){
         var self = this;
@@ -761,6 +761,7 @@ var ProductCategoriesWidget = PosBaseWidget.extend({
     },
     
     // resets the current category to the root category
+
     reset_category: function(){
         this.set_category(this.pos.db.get_category_by_id(this.start_categ_id));
         this.renderElement();
@@ -790,7 +791,7 @@ var ProductCategoriesWidget = PosBaseWidget.extend({
         }
     },
 
-});
+}); */
 
 /* --------- The Product List --------- */
 
@@ -946,10 +947,10 @@ var ProductScreenWidget = ScreenWidget.extend({
         });
         this.product_list_widget.replace(this.$('.placeholder-ProductListWidget'));
 
-        this.product_categories_widget = new ProductCategoriesWidget(this,{
+/*         this.product_categories_widget = new ProductCategoriesWidget(this,{
             product_list_widget: this.product_list_widget,
-        });
-        this.product_categories_widget.replace(this.$('.placeholder-ProductCategoriesWidget'));
+        }); */
+        //this.product_categories_widget.replace(this.$('.placeholder-ProductCategoriesWidget'));
 
         this.action_buttons = {};
         var classes = action_button_classes;
@@ -977,7 +978,7 @@ var ProductScreenWidget = ScreenWidget.extend({
     show: function(reset){
         this._super();
         if (reset) {
-            this.product_categories_widget.reset_category();
+            //this.product_categories_widget.reset_category();
             this.numpad.state.reset();
         }
         if (this.pos.config.iface_vkeyboard && this.chrome.widget.keyboard) {
@@ -1128,7 +1129,7 @@ var ClientListScreenWidget = ScreenWidget.extend({
         var self = this;
         var order = this.pos.get_order();
         if( this.has_client_changed() ){
-            var default_fiscal_position_id = _.find(this.pos.fiscal_positions, function(fp) {
+/*             var default_fiscal_position_id = _.find(this.pos.fiscal_positions, function(fp) {
                 return fp.id === self.pos.config.default_fiscal_position_id[0];
             });
             if ( this.new_client && this.new_client.property_account_position_id ) {
@@ -1137,7 +1138,7 @@ var ClientListScreenWidget = ScreenWidget.extend({
                 }) || default_fiscal_position_id;
             } else {
                 order.fiscal_position = default_fiscal_position_id;
-            }
+            } */
 
             order.set_client(this.new_client);
         }
@@ -2062,7 +2063,7 @@ var PaymentScreenWidget = ScreenWidget.extend({
 });
 gui.define_screen({name:'payment', widget: PaymentScreenWidget});
 
-var set_fiscal_position_button = ActionButtonWidget.extend({
+/* var set_fiscal_position_button = ActionButtonWidget.extend({
     template: 'SetFiscalPositionButton',
     init: function (parent, options) {
         this._super(parent, options);
@@ -2117,15 +2118,15 @@ var set_fiscal_position_button = ActionButtonWidget.extend({
 
         return name;
     }
-});
+}); */
 
-define_action_button({
+/* define_action_button({
     'name': 'set_fiscal_position',
     'widget': set_fiscal_position_button,
     'condition': function(){
         return this.pos.fiscal_positions.length > 0;
     },
-});
+}); */
 
 return {
     ReceiptScreenWidget: ReceiptScreenWidget,
@@ -2140,9 +2141,9 @@ return {
     ClientListScreenWidget: ClientListScreenWidget,
     ActionpadWidget: ActionpadWidget,
     DomCache: DomCache,
-    ProductCategoriesWidget: ProductCategoriesWidget,
+    //ProductCategoriesWidget: ProductCategoriesWidget,
     ScaleScreenWidget: ScaleScreenWidget,
-    set_fiscal_position_button: set_fiscal_position_button,
+    //set_fiscal_position_button: set_fiscal_position_button,
 };
 
 });

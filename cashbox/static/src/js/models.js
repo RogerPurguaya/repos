@@ -1,9 +1,9 @@
-odoo.define('point_of_sale.models', function (require) {
+odoo.define('cashbox.models', function (require) {
 "use strict";
 
 var BarcodeParser = require('barcodes.BarcodeParser');
-var PosDB = require('point_of_sale.DB');
-var devices = require('point_of_sale.devices');
+var PosDB = require('cashbox.DB');
+var devices = require('cashbox.devices');
 var core = require('web.core');
 var Model = require('web.DataModel');
 var formats = require('web.formats');
@@ -230,24 +230,29 @@ exports.PosModel = Backbone.Model.extend({
             });
         },
     },{
-        model:  'pos.session',
+        model:  'cashbox.session',
         fields: ['id', 'journal_ids','name','user_id','config_id','start_at','stop_at','sequence_number','login_number'],
         domain: function(self){ return [['state','=','opened'],['user_id','=',session.uid]]; },
         loaded: function(self,pos_sessions){
             self.pos_session = pos_sessions[0];
         },
     },{
-        model: 'pos.config',
+        model: 'cashbox.config',
         fields: [],
         domain: function(self){ return [['id','=', self.pos_session.config_id[0]]]; },
         loaded: function(self,configs){
             self.config = configs[0];
-            self.config.use_proxy = self.config.iface_payment_terminal || 
+/*             self.config.use_proxy = self.config.iface_payment_terminal || 
                                     self.config.iface_electronic_scale ||
+                                    self.config.iface_print_via_proxy  ||
+                                    self.config.iface_scan_via_proxy   ||
+                                    self.config.iface_cashdrawer; */
+            self.config.use_proxy = self.config.iface_payment_terminal || 
                                     self.config.iface_print_via_proxy  ||
                                     self.config.iface_scan_via_proxy   ||
                                     self.config.iface_cashdrawer;
 
+                                    
             if (self.config.company_id[0] !== self.user.company_id[0]) {
                 throw new Error(_t("Error: The Point of Sale User must belong to the same company as the Point of Sale. You are probably trying to load the point of sale as an administrator in a multi-company setup, with the administrator account set to the wrong company."));
             }
@@ -264,8 +269,9 @@ exports.PosModel = Backbone.Model.extend({
        },
     },{
         model:  'res.users',
-        fields: ['name','pos_security_pin','groups_id','barcode'],
-        domain: function(self){ return [['company_id','=',self.user.company_id[0]],'|', ['groups_id','=', self.config.group_pos_manager_id[0]],['groups_id','=', self.config.group_pos_user_id[0]]]; },
+        //fields: ['name','pos_security_pin','groups_id','barcode'],
+        fields: ['name','pos_security_pin','groups_id'],
+        domain: function(self){ return [['company_id','=',self.user.company_id[0]],'|', ['groups_id','=', self.config.group_cashbox_manager_id[0]],['groups_id','=', self.config.group_cashbox_user_id[0]]]; },
         loaded: function(self,users){ 
             // we attribute a role to the user, 'cashier' or 'manager', depending
             // on the group the user belongs. 
@@ -275,10 +281,10 @@ exports.PosModel = Backbone.Model.extend({
                 var user = users[i];
                 for (var j = 0; j < user.groups_id.length; j++) {
                     var group_id = user.groups_id[j];
-                    if (group_id === self.config.group_pos_manager_id[0]) {
+                    if (group_id === self.config.group_cashbox_manager_id[0]) {
                         user.role = 'manager';
                         break;
-                    } else if (group_id === self.config.group_pos_user_id[0]) {
+                    } else if (group_id === self.config.group_cashbox_user_id[0]) {
                         user.role = 'cashier';
                     }
                 }
@@ -295,12 +301,14 @@ exports.PosModel = Backbone.Model.extend({
             }
             self.users = pos_users; 
         },
-    },{
+    },
+/*     {
         model: 'stock.location',
         fields: [],
         ids:    function(self){ return [self.config.stock_location_id[0]]; },
         loaded: function(self, locations){ self.shop = locations[0]; },
-    },{
+    }, */
+    {
         model:  'product.pricelist',
         fields: ['currency_id'],
         ids:    function(self){ return [self.config.pricelist_id[0]]; },
@@ -338,10 +346,24 @@ exports.PosModel = Backbone.Model.extend({
         loaded: function(self, products){
             self.db.add_products(products);
         },
-    },{
+    },
+/*     {
         model:  'account.bank.statement',
         fields: ['account_id','currency_id','journal_id','state','name','user_id','pos_session_id'],
         domain: function(self){ return [['state', '=', 'open'],['pos_session_id', '=', self.pos_session.id]]; },
+        loaded: function(self, cashregisters, tmp){
+            self.cashregisters = cashregisters;
+
+            tmp.journals = [];
+            _.each(cashregisters,function(statement){
+                tmp.journals.push(statement.journal_id[0]);
+            });
+        },
+    } */
+    {
+        model:  'cashbox.summary.cash',
+        fields: ['currency_id','journal_id','state','name','user_id','session_id'],
+        domain: function(self){ return [['state', '=', 'open'],['session_id', '=', self.pos_session.id]]; },
         loaded: function(self, cashregisters, tmp){
             self.cashregisters = cashregisters;
 
@@ -386,14 +408,18 @@ exports.PosModel = Backbone.Model.extend({
             });
 
         },
-    },  {
+    },  
+/*     {
         model:  'account.fiscal.position',
         fields: [],
         domain: function(self){ return [['id','in',self.config.fiscal_position_ids]]; },
         loaded: function(self, fiscal_positions){
             self.fiscal_positions = fiscal_positions;
         }
-    }, {
+    }, */
+
+
+/*      {
         model:  'account.fiscal.position.tax',
         fields: [],
         domain: function(self){
@@ -420,7 +446,9 @@ exports.PosModel = Backbone.Model.extend({
                 });
             });
         }
-    },  {
+    }, */  
+    
+    {
         label: 'fonts',
         loaded: function(){
             var fonts_loaded = new $.Deferred();
@@ -473,14 +501,15 @@ exports.PosModel = Backbone.Model.extend({
 
             return logo_loaded;
         },
-    }, {
+    }, 
+/*     {
         label: 'barcodes',
         loaded: function(self) {
             var barcode_parser = new BarcodeParser({'nomenclature_id': self.config.barcode_nomenclature_id});
             self.barcode_reader.set_barcode_parser(barcode_parser);
             return barcode_parser.is_loaded();
         },
-    }
+    } */
     ],
 
     // loads all the needed data on the sever. returns a deferred indicating when all the data has loaded. 
@@ -748,7 +777,7 @@ exports.PosModel = Backbone.Model.extend({
 
                 // generate the pdf and download it
                 if (order_server_id.length) {
-                    self.chrome.do_action('point_of_sale.pos_invoice_report',{additional_context:{ 
+                    self.chrome.do_action('cashbox.pos_invoice_report',{additional_context:{ 
                         active_ids:order_server_id,
                     }}).done(function () {
                         invoiced.resolve();
@@ -1658,7 +1687,7 @@ exports.Paymentline = Backbone.Model.extend({
         return {
             name: time.datetime_to_str(new Date()),
             statement_id: this.cashregister.id,
-            account_id: this.cashregister.account_id[0],
+            //account_id: this.cashregister.account_id[0],
             journal_id: this.cashregister.journal_id[0],
             amount: this.get_amount()
         };
@@ -1708,9 +1737,9 @@ exports.Order = Backbone.Model.extend({
             this.uid  = this.generate_unique_id();
             this.name = _t("Order ") + this.uid;
             this.validation_date = undefined;
-            this.fiscal_position = _.find(this.pos.fiscal_positions, function(fp) {
+/*             this.fiscal_position = _.find(this.pos.fiscal_positions, function(fp) {
                 return fp.id === self.pos.config.default_fiscal_position_id[0];
-            });
+            }); */
         }
 
         this.on('change',              function(){ this.save_to_db("order:change"); }, this);
@@ -1740,7 +1769,7 @@ exports.Order = Backbone.Model.extend({
         this.name = _t("Order ") + this.uid;
         this.validation_date = json.creation_date;
 
-        if (json.fiscal_position_id) {
+/*         if (json.fiscal_position_id) {
             var fiscal_position = _.find(this.pos.fiscal_positions, function (fp) {
                 return fp.id === json.fiscal_position_id;
             });
@@ -1750,7 +1779,7 @@ exports.Order = Backbone.Model.extend({
             } else {
                 console.error('ERROR: trying to load a fiscal position not available in the pos');
             }
-        }
+        } */
 
         if (json.partner_id) {
             client = this.pos.db.get_partner_by_id(json.partner_id);

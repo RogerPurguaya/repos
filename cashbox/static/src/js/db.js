@@ -1,4 +1,4 @@
-odoo.define('point_of_sale.DB', function (require) {
+odoo.define('cashbox.DB', function (require) {
 "use strict";
 
 var core = require('web.core');
@@ -75,9 +75,11 @@ var PosDB = core.Class.extend({
     },
     /* returns a list of all ancestors (parent, grand-parent, etc) categories ids
      * starting from the root category to the direct parent */
-    get_category_ancestors_ids: function(categ_id){
+
+/*     get_category_ancestors_ids: function(categ_id){
         return this.category_ancestors[categ_id] || [];
-    },
+    }, */
+
     /* returns the parent category's id of a category, or the root_category_id if no parent.
      * the root category is parent of itself. */
     get_category_parent_id: function(categ_id){
@@ -168,7 +170,10 @@ var PosDB = core.Class.extend({
         return str;
     },
     add_products: function(products){
-        var stored_categories = this.product_by_category_id;
+        // Agrega los producto al inicio de todo, podemos usarlo para cargar los pedidos de venta
+        //xD
+
+/*         var stored_categories = this.product_by_category_id;
 
         if(!products instanceof Array){
             products = [products];
@@ -206,7 +211,7 @@ var PosDB = core.Class.extend({
             if(product.barcode){
                 this.product_by_barcode[product.barcode] = product;
             }
-        }
+        } */
     },
     _partner_search_string: function(partner){
         var str =  partner.name;

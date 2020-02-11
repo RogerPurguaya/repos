@@ -1,10 +1,10 @@
-odoo.define('point_of_sale.devices', function (require) {
+odoo.define('cashbox.devices', function (require) {
 "use strict";
 
 var core = require('web.core');
 var Model = require('web.DataModel');
 var Session = require('web.Session');
-var PosBaseWidget = require('point_of_sale.BaseWidget');
+var PosBaseWidget = require('cashbox.BaseWidget');
 
 var QWeb = core.qweb;
 var _t = core._t;
@@ -444,7 +444,8 @@ var ProxyDevice  = core.Class.extend(core.mixins.PropertiesMixin,{
 
     print_sale_details: function() { 
         var self = this;
-        new Model('report.point_of_sale.report_saledetails').call('get_sale_details').then(function(result){
+        //report.point_of_sale.report_saledetails
+        new Model('report.cashbox.report_saledetails').call('get_sale_details').then(function(result){
             var env = {
                 widget: new PosBaseWidget(self),
                 company: self.pos.company,

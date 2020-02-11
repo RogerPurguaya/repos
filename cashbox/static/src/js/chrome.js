@@ -1,10 +1,10 @@
-odoo.define('point_of_sale.chrome', function (require) {
+odoo.define('cashbox.chrome', function (require) {
 "use strict";
 
-var PosBaseWidget = require('point_of_sale.BaseWidget');
-var gui = require('point_of_sale.gui');
-var keyboard = require('point_of_sale.keyboard');
-var models = require('point_of_sale.models');
+var PosBaseWidget = require('cashbox.BaseWidget');
+var gui = require('cashbox.gui');
+var keyboard = require('cashbox.keyboard');
+var models = require('cashbox.models');
 var core = require('web.core');
 var ajax = require('web.ajax');
 var CrashManager = require('web.CrashManager');
@@ -507,7 +507,7 @@ var Chrome = PosBaseWidget.extend({
         if ($.browser.chrome) {
             var chrome_version = $.browser.version.split('.')[0];
             if (parseInt(chrome_version, 10) >= 50) {
-                ajax.loadCSS('/point_of_sale/static/src/css/chrome50.css');
+                ajax.loadCSS('/cashbox/static/src/css/chrome50.css');
             }
         }
 

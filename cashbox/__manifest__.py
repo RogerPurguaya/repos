@@ -52,6 +52,6 @@
 	],
 	'installable': True,
 	'application': True,
-	#'qweb': ['static/src/xml/pos.xml'],
+	'qweb': ['static/src/xml/pos.xml'],
 	'website': 'https://www.itgrupo.solutions.site',
 }

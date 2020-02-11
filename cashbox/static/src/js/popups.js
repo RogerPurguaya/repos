@@ -1,4 +1,4 @@
-odoo.define('point_of_sale.popups', function (require) {
+odoo.define('cashbox.popups', function (require) {
 "use strict";
 
 // This file contains the Popups.
@@ -6,8 +6,8 @@ odoo.define('point_of_sale.popups', function (require) {
 // They are instanciated / destroyed with the .gui.show_popup()
 // and .gui.close_popup() methods.
 
-var PosBaseWidget = require('point_of_sale.BaseWidget');
-var gui = require('point_of_sale.gui');
+var PosBaseWidget = require('cashbox.BaseWidget');
+var gui = require('cashbox.gui');
 var _t  = require('web.core')._t;
 
 
