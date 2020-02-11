@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_cashbox_session_filtered" model="ir.actions.act_window">
+        <field name="name">Sesiones</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">cashbox.session</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_cashbox_session_search" />
+        <field name="context">{
+            'search_default_config_id': [active_id],
+            'default_config_id': active_id}
+        </field>
+    </record>
+
+    <!-- <record id="action_pos_order_filtered" model="ir.actions.act_window">
+        <field name="name">Orders</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pos.order</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_pos_order_search"/>
+        <field name="context">{
+            'search_default_config_id': [active_id],
+            'default_config_id': active_id}
+        </field>
+    </record> -->
+
+    <!-- <record id="action_report_pos_order_all_filtered" model="ir.actions.act_window">
+        <field name="name">Orders Analysis</field>
+        <field name="res_model">report.pos.order</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">pivot,graph</field>
+        <field name="search_view_id" ref="view_report_pos_order_search"/>
+        <field name="context">{
+            'search_default_config_id': [active_id],
+            'default_config_id': active_id}
+        </field>
+    </record> -->
+
+    <!-- Dashboard -->
+
+    <record id="view_cashbox_config_kanban" model="ir.ui.view">
+        <field name="name">cashbox.config.kanban.view</field>
+        <field name="model">cashbox.config</field>
+        <field name="arch" type="xml">
+            <kanban create="false" class="o_kanban_dashboard o_pos_kanban">
+                <field name="name"/>
+                <field name="session_ids"/>
+                <field name="current_session_id"/>
+                <field name="current_session_state"/>
+                <field name="last_session_closing_date"/>
+                <field name="cashbox_session_username"/>
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div>
+                            <div class="o_kanban_card_header">
+                                <div class="o_kanban_card_header_title">
+                                    <div class="o_primary"><t t-esc="record.name.value"/></div>
+                                    <div class="o_secondary"><t t-esc="record.cashbox_session_username.value || 'No usado'"/></div>
+                                </div>
+                                <div class="o_kanban_manage_button_section">
+                                    <a class="o_kanban_manage_toggle_button" href="#">Más <i class="fa fa-caret-down"/></a>
+                                </div>
+                            </div>
+                            <div class="container o_kanban_card_content o_visible">
+                                <div class="row">
+                                    <div class="col-xs-6 o_kanban_primary_left">
+                                        <button t-if="record.current_session_state.raw_value === 'opened'" class="btn btn-primary" name="open_ui" type="object">Resumen</button>
+
+                                        <button t-if="record.current_session_state.raw_value === 'opening_control'" class="btn btn-primary" name="open_existing_session_cb" type="object">Sesiones abiertas</button>
+
+                                        <button t-if="record.current_session_state.raw_value === 'opened'" class="btn btn-default" name="open_existing_session_cb_close" type="object">Cerrar</button>
+
+                                        <button t-if="record.current_session_state.raw_value === 'closing_control'" class="btn btn-default" name="open_existing_session_cb" type="object">Cerrar</button>
+                                        <button t-if="!record.current_session_id.raw_value" class="btn btn-primary" name="open_session_cb" type="object">Nueva sesión</button>
+                                    </div>
+                                    <div class="col-xs-6 o_kanban_primary_right">
+
+                                        <div t-if="record.last_session_closing_date.value" class="row">
+                                            <div class="col-xs-6">
+                                                <span>Última Fecha de Cierre</span>
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <span><t t-esc="record.last_session_closing_date.value"/></span>
+                                            </div>
+                                        </div>
+
+                                        <div t-if="record.last_session_closing_date.value" class="row">
+                                            <div class="col-xs-6">
+                                                <span>Balance de Efectivo</span>
+                                            </div>
+                                            <div class="col-xs-6">
+                                                <span><field name="last_session_closing_cash" widget="monetary"/></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div><div class="container o_kanban_card_manage_pane o_invisible">
+                                <div class="row">
+                                    <div class="col-xs-6 o_kanban_card_manage_section o_kanban_manage_view">
+                                        <div class="o_kanban_card_manage_title">
+                                            <span>Ver</span>
+                                        </div>
+                                        <div>
+                                           
+
+                                            <a name="%(action_cashbox_session_filtered)d" type="action">Sesiones</a>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div t-if="widget.editable" class="o_kanban_card_manage_settings row">
+                                    <div class="col-xs-12 text-right">
+                                        <a type="edit">Configuración</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+</odoo>
