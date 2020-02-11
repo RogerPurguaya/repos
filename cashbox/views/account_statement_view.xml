@@ -8,7 +8,7 @@
                 <xpath expr="//notebook[last()]" position="inside">
                     <page string="Caja" attrs="{'invisible': [('type','not in',['bank','cash'])]}">
                         <group col="4" colspan="4">
-                            
+                            <field name="available_set_balance"/>
                             <!-- <field name="journal_user"/>
                             <field name="amount_authorized_diff"/> -->
                         </group>

@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- <act_window
-        id="act_cashbox_session_orders"
-        name="Orders"
+    <act_window
+        id="cashbox_movement_cash_in_action"
+        name="Poner Dinero"
         src_model="cashbox.session"
-        res_model="pos.order"
-        context="{'search_default_session_id': active_id, 'default_session_id' : active_id }"/> -->
+        res_model="cashbox.movement.record"
+        view_mode="form"
+        context="{'default_type_movement':'in', 'default_user_id':uid, 'default_session_id':active_id}"/>
+
+    <act_window
+        id="cashbox_movement_cash_out_action"
+        name="Sacar Dinero"
+        src_model="cashbox.session"
+        res_model="cashbox.movement.record"
+        view_mode="form"
+        context="{'default_type_movement':'out', 'default_user_id':uid, 'default_session_id':active_id}"/>
+
 
     <record id="view_cashbox_session_form" model="ir.ui.view">
         <field name="name">cashbox.session.form.view</field>
@@ -32,7 +42,7 @@
                 <sheet>
                     <!-- <field name="cash_register_id" invisible="1"/> -->
                     <div class="oe_button_box" name="button_box">
-                        <button class="oe_stat_button" name="action_pos_box_in"
+                        <button class="oe_stat_button" name="%(cashbox_movement_cash_in_action)d"
                             type="action" icon="fa-level-down"
                             attrs="{'invisible': ['|', ('cash_control', '=', False), ('state', 'not in', ['opened', 'closing_control'])]}">
                             <div class="o_form_field o_stat_info">
@@ -40,7 +50,7 @@
                                 <span class="o_stat_text">Dinero</span>
                             </div>
                         </button>
-                        <button class="oe_stat_button" name="action_pos_box_out"
+                        <button class="oe_stat_button" name="%(cashbox_movement_cash_out_action)d"
                             type="action" icon="fa-level-up"
                             attrs="{'invisible': ['|', ('cash_control', '=', False), ('state', 'not in', ['opened', 'closing_control'])]}">
                             <div class="o_form_field o_stat_info">
@@ -74,7 +84,8 @@
                         <field name="cash_control" invisible="1" />
                         <group>
                             <field name="user_id"/>
-                            <field name="currency_id" invisible="1"/>
+                            <field name="currency_id" readonly="1"/>
+                            <field name="exchange_type_ids" widget="many2many_tags" required="1"/>
                             <field name="config_id"/>
                         </group>
                         <group>
@@ -111,10 +122,11 @@
                             </group>
                         </div>
                     </group>
-                    <!-- <separator string="Resumen por método de pago" attrs="{'invisible' : [('state', '=', 'opening_control')]}"/> -->
-                    <!-- <field name="statement_ids" attrs="{'invisible' : [('state', '=', 'opening_control')]}">
-                        <tree string="Statements">
-                            <field name="name" />
+                    <separator string="Resumen por método de pago" attrs="{'invisible' : [('state', '=', 'opening_control')]}"/>
+
+                    <field name="summary_cash_ids" attrs="{'invisible' : [('state', '=', 'opening_control')]}">
+                        <tree string="Resumen">
+                            <field name="reference" />
                             <field name="journal_id" />
                             <field name="balance_start" />
                             <field name="total_entry_encoding" />
@@ -123,7 +135,7 @@
                             <field name="currency_id" groups="base.group_multi_currency" />
                             <field name="state" />
                         </tree>
-                    </field> -->
+                    </field>
                 </sheet>
             </form>
         </field>

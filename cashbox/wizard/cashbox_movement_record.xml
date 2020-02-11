@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!-- cashbox.movement.record form view -->
+    <record id="cashbox_movement_record_view_form" model="ir.ui.view">
+        <field name="name">cashbox.movement.record.view.form</field>
+        <field name="model">cashbox.movement.record</field>
+        <field name="arch" type="xml">
+            <form string="Registro de movimientos de dinero">
+                <group>
+                    <group>
+                        <field name="type_movement"/>
+                        <field name="journal_id" required="1"/>
+                        <field name="amount" required="1"/>
+                    </group>
+                    <group>
+                        <field name="session_id" readonly="1"/>
+                        <field name="user_id"/>
+                        <!-- <field name="reason" required="1"/> -->
+                    </group>
+                </group>
+                <footer>
+                    <button string="Registrar" name="register" type="object" class="btn-primary"/>
+                    <button string="Cancelar" name="cancel" special="cancel" class="oe_link oe_inline"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,28 @@
+<?xml version='1.0' encoding='utf-8'?>
+<odoo>
+    <!-- cashbox.summary.cash form view -->
+    <record id="cashbox_summary_cash_view_form" model="ir.ui.view">
+        <field name="name">cashbox.summary.cash.view.form</field>
+        <field name="model">cashbox.summary.cash</field>
+        <field name="arch" type="xml">
+            <form string="Resumen">
+                <sheet>
+                    <group>
+                        <field name="journal_id" readonly="1"/> 
+                        <field name="currency_id" readonly="1"/> 
+                        <field name="session_id" readonly="1"/> 
+                        <field name="reference" readonly="1"/> 
+                        <field name="balance_start" readonly="1"/> 
+                    </group>
+                    <group>
+                        <field name="total_entry_encoding" readonly="1"/> 
+                        <field name="balance_end_real" readonly="1"/> 
+                        <field name="difference" readonly="1"/> 
+                        <field name="user_id" readonly="1"/> 
+                        <field name="state" readonly="1"/>  
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

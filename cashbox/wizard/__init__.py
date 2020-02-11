@@ -6,3 +6,5 @@
 #import pos_discount
 #import pos_open_statement
 #import pos_payment
+from . import cashbox_cash_control_wizard
+from . import cashbox_movement_record

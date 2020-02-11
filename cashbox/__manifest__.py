@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-
 {
 	'name': 'Caja',
 	'version': '1.0.1',
@@ -20,7 +19,7 @@
 		#'wizard/pos_discount.xml',
 		#'wizard/pos_open_statement.xml',
 		#'wizard/pos_payment.xml',
-		#'views/pos_templates.xml',
+		'views/pos_templates.xml',
 		'views/point_of_sale_template.xml',
 		#'views/point_of_sale_report.xml',
 		'views/point_of_sale_view.xml',
@@ -43,6 +42,10 @@
 		#'views/report_saledetails.xml',
 		'views/point_of_sale.xml',
 		'views/point_of_sale_dashboard.xml',
+		'views/cashbox_exchange_type.xml',
+		'wizard/cashbox_cash_control_wizard.xml',
+		'views/cashbox_summary_cash.xml',
+		'wizard/cashbox_movement_record.xml',
 	],
 	'demo': [
 		#'data/point_of_sale_demo.xml',

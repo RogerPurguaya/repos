@@ -79,7 +79,7 @@ class CashboxConfig(models.Model):
 	currency_id = fields.Many2one('res.currency', compute='_compute_currency', string="Currency")
 	iface_cashdrawer = fields.Boolean(string='Cashdrawer', help="Automatically open the cashdrawer")
 	iface_payment_terminal = fields.Boolean(string='Payment Terminal', help="Enables Payment Terminal integration")
-	iface_electronic_scale = fields.Boolean(string='Electronic Scale', help="Enables Electronic Scale integration")
+	#iface_electronic_scale = fields.Boolean(string='Electronic Scale', help="Enables Electronic Scale integration")
 	iface_vkeyboard = fields.Boolean(string='Virtual KeyBoard', help="Enables an integrated Virtual Keyboard")
 	iface_print_via_proxy = fields.Boolean(string='Print via Proxy', help="Bypass browser printing and prints via the hardware proxy")
 	iface_scan_via_proxy = fields.Boolean(string='Scan via Proxy', help="Enable barcode scanning with a remotely connected barcode scanner")
@@ -91,12 +91,12 @@ class CashboxConfig(models.Model):
 		help='The receipt screen will be skipped if the receipt can be printed automatically.')
 	iface_precompute_cash = fields.Boolean(string='Prefill Cash Payment',
 		help='The payment input will behave similarily to bank payment input, and will be prefilled with the exact due amount')
-	iface_tax_included = fields.Boolean(string='Include Taxes in Prices',
-		help='The displayed prices will always include all taxes, even if the taxes have been setup differently')
+	#iface_tax_included = fields.Boolean(string='Include Taxes in Prices',
+	#	help='The displayed prices will always include all taxes, even if the taxes have been setup differently')
 	#iface_start_categ_id = fields.Many2one('pos.category', string='Start Category',
 	#	help='The point of sale will display this product category by default. If no category is specified, all available products will be shown')
-	iface_display_categ_images = fields.Boolean(string='Display Category Pictures',
-		help="The product categories will be displayed with pictures.")
+	#iface_display_categ_images = fields.Boolean(string='Display Category Pictures',
+	#	help="The product categories will be displayed with pictures.")
 	cash_control = fields.Boolean(string='Cash Control', help="Check the amount of the cashbox at opening and closing.")
 	receipt_header = fields.Text(string='Receipt Header', help="A short text that will be inserted as a header in the printed receipt")
 	receipt_footer = fields.Text(string='Receipt Footer', help="A short text that will be inserted as a footer in the printed receipt")

@@ -60,7 +60,9 @@ class CashboxSession(models.Model):
 	#cash_control = fields.Boolean(compute='_compute_cash_all',    string='Has Cash Control')
 	# Originalmente depende de los extractos y de la configuración
 	cash_control = fields.Boolean(compute='_compute_cash_all',string='Tiene Control de Efectivo')
-	cash_journal_id = fields.Many2one('account.journal', compute='_compute_cash_all', string='Cash Journal', store=True)
+	cash_journal_id = fields.Many2one('account.journal', compute='_compute_cash_all', string='Cash Journal',store=True)
+	exchange_type_ids = fields.Many2many('cashbox.exchange.type',string=u'Tipos de cambio comercial')
+
 	#cash_register_id = fields.Many2one('account.bank.statement', compute='_compute_cash_all', string='Cash Register', store=True)
 
 	# cash_register_balance_end_real = fields.Monetary(
@@ -126,6 +128,7 @@ class CashboxSession(models.Model):
 	#order_ids = fields.One2many('pos.order', 'session_id',  string='Orders')
 	#statement_ids = fields.One2many('account.bank.statement', 'pos_session_id', string='Bank Statement', readonly=True)
 	#picking_count = fields.Integer(compute='_compute_picking_count')
+	summary_cash_ids = fields.One2many('cashbox.summary.cash','session_id',string=u'Resumen por método de pago')
 
 	_sql_constraints = [('uniq_name', 'unique(name)', _("The name of this POS Session must be unique !"))]
 
@@ -225,37 +228,45 @@ class CashboxSession(models.Model):
 			journals.sudo().write({'journal_user': True})
 			pos_config.sudo().write({'journal_ids': [(6, 0, journals.ids)]})
 
-		# or si acaso
-		# pos_name = self.env['ir.sequence'].with_context(ctx).next_by_code('cashbox.session')
-		# if values.get('name'):
-		# 	pos_name += ' ' + values['name']
+		pos_name = self.env['ir.sequence'].with_context(ctx).next_by_code('cashbox.session')
+		if values.get('name'):
+			pos_name += ' ' + values['name']
 
-		#statements = []
-		#ABS = self.env['account.bank.statement']
+		summary_cash_ids = []
+		SummaryCash = self.env['cashbox.summary.cash']
 		uid = SUPERUSER_ID if self.env.user.has_group('cashbox.group_cashbox_user') else self.env.user.id
 		for journal in pos_config.journal_ids:
 			# set the journal_id which should be used by
 			# account.bank.statement to set the opening balance of the
 			# newly created bank statement
-			ctx['journal_id'] = journal.id if pos_config.cash_control and journal.type == 'cash' else False
-			st_values = {
+			#ctx['journal_id'] = journal.id if pos_config.cash_control and journal.type == 'cash' else False
+			summ_values = {
 				'journal_id': journal.id,
 				'user_id': self.env.user.id,
-				'name': pos_name
+				'reference': pos_name,
 			}
-
-			#statements.append(ABS.with_context(ctx).sudo(uid).create(st_values).id)
-
+			summary_cash_ids.append(SummaryCash.sudo(uid).create(summ_values).id)
+		self._cr.execute("""
+		SELECT ex.id FROM 
+		cashbox_exchange_type ex
+		JOIN
+			(SELECT MAX(date) AS date 
+			FROM 
+			cashbox_exchange_type 
+			GROUP BY currency_id)X
+		ON 
+		ex.date = X.date""")
+		ids = [r[0] for r in self._cr.fetchall()]
 		values.update({
-			#'name': pos_name,
-			#'statement_ids': [(6, 0, statements)],
-			'config_id': config_id
+			'name': pos_name,
+			'summary_cash_ids': [(6, 0, summary_cash_ids)],
+			'config_id': config_id,
+			'exchange_type_ids': [(6,0,ids)],
 		})
 
 		res = super(CashboxSession, self.with_context(ctx).sudo(uid)).create(values)
 		if not pos_config.cash_control:
 			res.action_pos_session_open()
-
 		return res
 
 	# @api.multi
@@ -272,7 +283,7 @@ class CashboxSession(models.Model):
 		})
 
 	@api.multi
-	def action_pos_session_open(self):
+	def action_cashbox_session_open(self):
 		# second browse because we need to refetch the data from the DB for cash_register_id
 		# we only open sessions that haven't already been opened
 		for session in self.filtered(lambda session: session.state == 'opening_control'):
@@ -285,7 +296,7 @@ class CashboxSession(models.Model):
 		return True
 
 	@api.multi
-	def action_pos_session_closing_control(self):
+	def action_cashbox_session_closing_control(self):
 		for session in self:
 			# for statement in session.statement_ids:
 			# 	if (statement != session.cash_register_id) and (statement.balance_end != statement.balance_end_real):
@@ -299,7 +310,7 @@ class CashboxSession(models.Model):
 				session.action_pos_session_close()
 
 	@api.multi
-	def action_pos_session_close(self):
+	def action_cashbox_session_close(self):
 		# Close CashBox
 		for session in self:
 			company_id = session.config_id.company_id.id
@@ -340,22 +351,24 @@ class CashboxSession(models.Model):
 		self.ensure_one()
 		context = dict(self._context)
 		balance_type = context.get('balance') or 'start'
-		#context['bank_statement_id'] = self.cash_register_id.id
 		context['balance'] = balance_type
-		context['default_pos_id'] = self.config_id.id
-
+		context['dom_journals'] = [('id','in',self.journal_ids.filtered('available_set_balance').ids)]
+		wizard = self.env['cashbox.cash.control.wizard'].create({
+			'session_id':self.id,
+		})
 		action = {
 			'name': _('Control de caja'),
+			'res_id':wizard.id,
 			'view_type': 'form',
 			'view_mode': 'form',
-			'res_model': 'account.bank.statement.cashbox',
-			'view_id': self.env.ref('account.view_account_bnk_stmt_cashbox').id,
+			'res_model': wizard._name,
+			'view_id': self.env.ref('cashbox.cashbox_cash_control_wizard_view_form').id,
 			'type': 'ir.actions.act_window',
 			'context': context,
-			'target': 'new'
+			'target': 'new',
 		}
 
-		cashbox_id = None
+		#cashbox_id = None
 		# if balance_type == 'start':
 		# 	cashbox_id = self.cash_register_id.cashbox_start_id.id
 		# else:
